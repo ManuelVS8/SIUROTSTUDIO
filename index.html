@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Configurador de juegos — Manuel J. Ventura</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Juego/icono_192.png">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Juego/icono_192.png">
+<meta name="theme-color" content="#1a3a5f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Configurador">
+<style>
+:root{
+  --ink:#1a3a5f;
+  --paper:#eef3fb;
+  --card:#ffffff;
+  --moss:#2f6fb0;
+  --moss-dark:#1a3a5f;
+  --clay:#f0924a;
+  --clay-dark:#d97324;
+  --line:#dbe6f2;
+  --muted:#7488a3;
+  --ok:#2f6fb0;
+  --radius:14px;
+  font-size:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Iowan Old Style","Georgia",serif;
+  min-height:100vh;
+  padding-bottom:40px;
+}
+.topbar{
+  position:sticky;top:0;z-index:30;
+  background:var(--moss);
+  color:#fff;
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,.15);
+}
+.topbar .mark{
+  width:30px;height:30px;border-radius:8px;
+  background:#fff;
+  object-fit:cover;
+  flex-shrink:0;
+}
+.topbar h1{
+  font-size:1rem;
+  margin:0;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-weight:600;
+  letter-spacing:.2px;
+}
+.topbar .step-indicator{
+  margin-left:auto;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.75rem;
+  opacity:.85;
+  white-space:nowrap;
+}
+
+/* barra de progreso del esqueleto (siempre visible salvo en portada) */
+.skeleton-bar{
+  display:flex;
+  gap:4px;
+  padding:10px 16px;
+  background:#eef3fb;
+  border-bottom:1px solid var(--line);
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.skeleton-bar::-webkit-scrollbar{display:none;}
+.skeleton-bar.hidden{display:none;}
+.sk-chip{
+  flex:0 0 auto;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.68rem;
+  padding:5px 10px;
+  border-radius:20px;
+  background:var(--card);
+  border:1px solid var(--line);
+  color:var(--muted);
+  white-space:nowrap;
+  cursor:pointer;
+  transition:transform .1s;
+}
+.sk-chip:active{transform:scale(.94);}
+.sk-chip.filled{background:var(--moss);border-color:var(--moss);color:#fff;}
+.sk-chip.pending{border-style:dashed;}
+
+.wrap{
+  max-width:640px;
+  margin:0 auto;
+  padding:20px 16px 0;
+}
+.screen{display:none;}
+.screen.active{display:block; animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.intro{margin-bottom:18px;}
+.intro h2{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:1.35rem;
+  margin:0 0 6px;
+  color:var(--moss-dark);
+}
+.intro p{
+  color:var(--muted);
+  font-size:.92rem;
+  line-height:1.5;
+  margin:0;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+}
+
+.pill-choice{display:flex;gap:8px;flex-wrap:wrap;}
+.pill-choice button{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.85rem;
+  padding:10px 16px;
+  border-radius:20px;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--ink);
+  cursor:pointer;
+}
+.pill-choice button.selected{
+  background:var(--moss);
+  border-color:var(--moss);
+  color:#fff;
+}
+
+.big-choice{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+.big-choice-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:16px;
+  cursor:pointer;
+  transition:border-color .15s, transform .1s;
+}
+.big-choice-card:active{transform:scale(.98);}
+.big-choice-card:hover{border-color:var(--moss);}
+.big-choice-card.selected{border-color:var(--moss);background:#e3edf9;}
+.big-choice-card b{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.95rem;
+  display:block;
+  margin-bottom:4px;
+  color:var(--ink);
+}
+.big-choice-card span{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.8rem;
+  color:var(--muted);
+  line-height:1.4;
+}
+
+.cat-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+.cat-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  cursor:pointer;
+  transition:border-color .15s, transform .1s;
+}
+.cat-card:active{transform:scale(.98);}
+.cat-card:hover{border-color:var(--moss);}
+.cat-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;
+  flex-shrink:0;
+}
+.cat-text h3{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.95rem;
+  margin:0 0 2px;
+  color:var(--ink);
+}
+.cat-text span{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.78rem;
+  color:var(--muted);
+}
+.cat-arrow{margin-left:auto;color:var(--moss);font-size:1.1rem;}
+
+.back-link{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.85rem;
+  color:var(--moss);
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  margin-bottom:14px;
+  user-select:none;
+}
+.type-list{display:flex;flex-direction:column;gap:8px;}
+.type-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+  cursor:pointer;
+  transition:border-color .15s, transform .1s;
+}
+.type-card:active{transform:scale(.98);}
+.type-card:hover{border-color:var(--clay);}
+.type-card b{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.92rem;
+  display:block;
+  margin-bottom:2px;
+}
+.type-card .tag{
+  display:inline-block;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.68rem;
+  color:var(--moss-dark);
+  background:#e3edf9;
+  padding:2px 7px;
+  border-radius:20px;
+  margin-top:4px;
+}
+
+.form-title{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:1.2rem;
+  color:var(--moss-dark);
+  margin:0 0 4px;
+}
+.form-sub{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.82rem;
+  color:var(--muted);
+  margin:0 0 18px;
+  line-height:1.5;
+}
+.field{margin-bottom:18px;}
+.field label{
+  display:block;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.85rem;
+  font-weight:600;
+  color:var(--ink);
+  margin-bottom:6px;
+}
+.field .hint{
+  display:block;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.74rem;
+  color:var(--muted);
+  margin-bottom:6px;
+  font-weight:400;
+  line-height:1.4;
+}
+.field input[type=text],
+.field textarea{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px 12px;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.9rem;
+  background:var(--card);
+  color:var(--ink);
+  resize:vertical;
+}
+.field textarea{min-height:90px;line-height:1.5;}
+.field input:focus,.field textarea:focus{outline:2px solid var(--moss);outline-offset:1px;}
+
+.pair-table{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+.pair-row{display:flex;border-bottom:1px solid var(--line);}
+.pair-row:last-child{border-bottom:none;}
+.pair-row input{
+  border:none;flex:1;padding:9px 10px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.85rem;background:var(--card);
+}
+.pair-row input:first-child{border-right:1px solid var(--line);}
+.pair-row input:focus{outline:none;background:#f2f7fd;}
+.pair-row .rm{
+  flex:0 0 34px;display:flex;align-items:center;justify-content:center;
+  color:var(--clay);cursor:pointer;font-size:1.1rem;background:var(--card);
+}
+.add-row-btn{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.8rem;
+  color:var(--moss-dark);
+  background:none;
+  border:1px dashed var(--moss);
+  border-radius:8px;
+  padding:7px 12px;
+  cursor:pointer;
+}
+
+.nav-bar{
+  display:flex;
+  gap:10px;
+  margin-top:26px;
+  padding-top:16px;
+  border-top:1px solid var(--line);
+}
+.btn{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.9rem;
+  font-weight:600;
+  padding:12px 18px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+  flex:1;
+  text-align:center;
+}
+.btn-secondary{background:var(--card);border:1px solid var(--line);color:var(--ink);}
+.btn-primary{background:var(--clay);color:#fff;}
+.btn-primary:active,.btn-secondary:active{opacity:.85;}
+.btn-ghost{background:none;border:1px solid var(--line);color:var(--moss-dark);}
+
+/* pantalla resumen del esqueleto */
+.stage-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.stage-item{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.stage-item .num{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--moss);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.75rem;font-weight:700;flex-shrink:0;
+}
+.stage-item .num.fixed{background:var(--clay);}
+.stage-item .txt b{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.88rem;
+  display:block;
+}
+.stage-item .txt span{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.74rem;
+  color:var(--muted);
+}
+.stage-item .status{
+  margin-left:auto;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.72rem;
+  padding:3px 9px;
+  border-radius:20px;
+  flex-shrink:0;
+}
+.status.done{background:#e3edf9;color:var(--moss-dark);}
+.status.pending{background:#fce9d9;color:var(--clay-dark);}
+.stage-move{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  flex-shrink:0;
+}
+.move-btn{
+  width:24px;height:20px;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--moss);
+  border-radius:5px;
+  font-size:.6rem;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;
+}
+.move-btn:disabled{
+  color:var(--line);
+  cursor:default;
+}
+.move-btn:active:not(:disabled){transform:scale(.9);}
+.stage-item .rm-stage{
+  color:var(--clay);
+  cursor:pointer;
+  font-size:1rem;
+  padding:0 4px;
+  flex-shrink:0;
+}
+
+.add-game-btn{
+  width:100%;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.88rem;
+  font-weight:600;
+  color:var(--moss-dark);
+  background:var(--card);
+  border:1.5px dashed var(--moss);
+  border-radius:12px;
+  padding:14px;
+  cursor:pointer;
+  margin-bottom:18px;
+}
+
+.result-box{
+  background:var(--ink);
+  color:#eef3fb;
+  border-radius:var(--radius);
+  padding:16px;
+  font-family:"SF Mono","Consolas",monospace;
+  font-size:.76rem;
+  line-height:1.6;
+  white-space:pre-wrap;
+  word-break:break-word;
+  max-height:55vh;
+  overflow-y:auto;
+  margin-bottom:14px;
+}
+.copy-feedback{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.8rem;
+  color:var(--ok);
+  text-align:center;
+  height:18px;
+  margin-bottom:8px;
+}
+.ref-note{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.76rem;
+  color:var(--muted);
+  background:#eef3fb;
+  border-radius:10px;
+  padding:10px 12px;
+  margin-bottom:16px;
+  line-height:1.5;
+}
+.ref-note b{color:var(--moss-dark);}
+
+.toast{
+  position:fixed;
+  top:14px;
+  left:50%;
+  transform:translateX(-50%) translateY(-20px);
+  max-width:calc(100% - 32px);
+  background:var(--clay-dark);
+  color:#fff;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.85rem;
+  font-weight:600;
+  padding:12px 18px;
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.2);
+  z-index:100;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s, transform .2s;
+  text-align:center;
+}
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+.crop-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(26,58,95,.55);
+  z-index:200;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+.crop-modal.show{display:flex;}
+.crop-panel{
+  background:var(--card);
+  border-radius:16px;
+  padding:16px;
+  max-width:480px;
+  width:100%;
+  max-height:92vh;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.crop-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-weight:700;
+  font-size:.95rem;
+  color:var(--moss-dark);
+}
+.crop-close{cursor:pointer;color:var(--muted);font-size:1.1rem;}
+.crop-stage{
+  position:relative;
+  width:100%;
+  max-height:min(48vh,360px);
+  overflow:hidden;
+  background:#0d2340;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  touch-action:none;
+  user-select:none;
+}
+.crop-stage img{
+  max-width:100%;
+  max-height:min(48vh,360px);
+  display:block;
+  pointer-events:none;
+  user-select:none;
+}
+.crop-box{
+  position:absolute;
+  border:2px solid var(--clay);
+  box-shadow:0 0 0 2000px rgba(0,0,0,.45);
+  cursor:move;
+  touch-action:none;
+}
+.crop-handle{
+  position:absolute;
+  width:16px;height:16px;
+  background:var(--clay);
+  border:2px solid #fff;
+  border-radius:50%;
+  touch-action:none;
+}
+.crop-handle[data-h="nw"]{top:-9px;left:-9px;cursor:nwse-resize;}
+.crop-handle[data-h="ne"]{top:-9px;right:-9px;cursor:nesw-resize;}
+.crop-handle[data-h="sw"]{bottom:-9px;left:-9px;cursor:nesw-resize;}
+.crop-handle[data-h="se"]{bottom:-9px;right:-9px;cursor:nwse-resize;}
+.crop-ratios{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.crop-ratios button{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.78rem;
+  padding:7px 12px;
+  border-radius:20px;
+  border:1px solid var(--line);
+  background:var(--paper);
+  color:var(--ink);
+  cursor:pointer;
+}
+.crop-ratios button.selected{
+  background:var(--moss);
+  border-color:var(--moss);
+  color:#fff;
+}
+.crop-actions{
+  display:flex;
+  gap:10px;
+}
+.crop-actions .btn{margin:0;}
+
+.splash{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  background:linear-gradient(160deg, #1a3a5f 0%, #254fba 55%, #1a3a5f 100%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  animation:splash-out .5s ease forwards;
+  animation-delay:1.9s;
+}
+.splash-logo{
+  width:96px;height:96px;
+  border-radius:22px;
+  background:#fff;
+  object-fit:cover;
+  box-shadow:0 12px 32px rgba(0,0,0,.25);
+  animation:splash-logo-in .6s cubic-bezier(.34,1.56,.64,1) both;
+}
+.splash-title{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:1.15rem;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:.3px;
+  opacity:0;
+  animation:splash-fade-up .5s ease .35s forwards;
+}
+.splash-sub{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.8rem;
+  color:#f0924a;
+  font-weight:600;
+  opacity:0;
+  animation:splash-fade-up .5s ease .5s forwards;
+}
+.splash-bar{
+  width:120px;
+  height:4px;
+  border-radius:4px;
+  background:rgba(255,255,255,.2);
+  overflow:hidden;
+  margin-top:8px;
+  opacity:0;
+  animation:splash-fade-up .4s ease .65s forwards;
+}
+.splash-bar-fill{
+  height:100%;
+  width:0%;
+  background:#f0924a;
+  border-radius:4px;
+  animation:splash-progress 1.5s ease .65s forwards;
+}
+
+@keyframes splash-logo-in{
+  from{opacity:0; transform:scale(.6) translateY(10px);}
+  to{opacity:1; transform:scale(1) translateY(0);}
+}
+@keyframes splash-fade-up{
+  from{opacity:0; transform:translateY(8px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@keyframes splash-progress{
+  from{width:0%;}
+  to{width:100%;}
+}
+@keyframes splash-out{
+  from{opacity:1; visibility:visible;}
+  to{opacity:0; visibility:hidden;}
+}
+@media (prefers-reduced-motion: reduce){
+  .splash, .splash-logo, .splash-title, .splash-sub, .splash-bar, .splash-bar-fill{
+    animation-duration:.01s !important;
+    animation-delay:0s !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="splash" id="splash">
+  <img class="splash-logo" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Juego/Logo_juego.png" alt="Logo">
+  <div class="splash-title">Configurador de juegos</div>
+  <div class="splash-sub">Manuel J. Ventura</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<div class="topbar">
+  <img class="mark" src="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Juego/Logo_juego.png" alt="Logo">
+  <h1>Configurador de juegos</h1>
+  <div class="step-indicator" id="stepIndicator"></div>
+</div>
+
+<div class="skeleton-bar hidden" id="skeletonBar"></div>
+
+<div class="toast" id="toast"></div>
+
+<div class="crop-modal" id="cropModal">
+  <div class="crop-panel">
+    <div class="crop-header">
+      <span>Recortar imagen</span>
+      <span class="crop-close" onclick="cancelCrop()">✕</span>
+    </div>
+    <div class="crop-stage" id="cropStage">
+      <img id="cropImage" alt="">
+      <div class="crop-box" id="cropBox">
+        <div class="crop-handle" data-h="nw"></div>
+        <div class="crop-handle" data-h="ne"></div>
+        <div class="crop-handle" data-h="sw"></div>
+        <div class="crop-handle" data-h="se"></div>
+      </div>
+    </div>
+    <div class="crop-ratios" id="cropRatios">
+      <button type="button" data-ratio="1:1">1:1</button>
+      <button type="button" data-ratio="4:3">4:3</button>
+      <button type="button" data-ratio="3:4">3:4</button>
+      <button type="button" data-ratio="3:5">3:5</button>
+      <button type="button" data-ratio="5:3">5:3</button>
+      <button type="button" data-ratio="free" class="selected">Libre</button>
+    </div>
+    <div class="crop-actions">
+      <button class="btn btn-secondary" type="button" onclick="skipCrop()">Usar sin recortar</button>
+      <button class="btn btn-primary" type="button" onclick="applyCrop()">Recortar y usar</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- PANTALLA 0: PORTADA / INICIO DE ARCHIVO -->
+  <div class="screen active" id="screen-start-choice">
+    <div class="intro">
+      <h2>Nuevo archivo de juego</h2>
+      <p>Un archivo completo tiene: pantalla de inicio → una o varias pantallas de juego → pantalla final. Empecemos por el inicio.</p>
+    </div>
+    <div class="big-choice">
+      <div class="big-choice-card" onclick="chooseStart('con_hof')">
+        <b>Inicio con Hall of Fame</b>
+        <span>Archivo: Aparato_respiratorio__2_.html — Pantalla de inicio. Incluye tabla de mejores puntuaciones.</span>
+      </div>
+      <div class="big-choice-card" onclick="chooseStart('sin_hof')">
+        <b>Inicio sin Hall of Fame</b>
+        <span>Archivo: Comercios_y_productos.html — Pantalla de inicio. Sin tabla de mejores puntuaciones.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA 1: FORMULARIO DE INICIO -->
+  <div class="screen" id="screen-start-form">
+    <span class="back-link" onclick="showScreen('screen-start-choice')">← Volver</span>
+    <div class="form-title" id="startFormTitle"></div>
+    <div class="ref-note" id="startFormRef"></div>
+    <form id="startForm"></form>
+    <div class="nav-bar">
+      <button class="btn btn-secondary" onclick="showScreen('screen-start-choice')">Atrás</button>
+      <button class="btn btn-primary" onclick="saveStartAndContinue()">Continuar</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: RESUMEN DEL ESQUELETO (añadir/quitar pantallas de juego) -->
+  <div class="screen" id="screen-skeleton">
+    <div class="intro">
+      <h2>Estructura del archivo</h2>
+      <p>Añade las pantallas de juego que quieras, en el orden en que aparecerán. Puedes mezclar tipos distintos.</p>
+    </div>
+    <div class="stage-list" id="stageList"></div>
+    <button class="add-game-btn" onclick="goToAddCategory()">+ Añadir pantalla (juego o resumen)</button>
+    <div class="nav-bar" style="margin-top:0;border-top:none;padding-top:0;">
+      <button class="btn btn-primary" id="finishSkeletonBtn" onclick="goToFinalChoice()" disabled>Continuar a pantalla final</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 3: ELEGIR CATEGORÍA DE JUEGO -->
+  <div class="screen" id="screen-categories">
+    <span class="back-link" onclick="showScreen('screen-skeleton')">← Estructura</span>
+    <div class="intro">
+      <h2>¿Qué tipo de pantalla añades?</h2>
+      <p>Elige una categoría para ver los tipos disponibles.</p>
+    </div>
+    <div class="cat-grid" id="catGrid"></div>
+  </div>
+
+  <!-- PANTALLA 4: ELEGIR TIPO DENTRO DE CATEGORÍA -->
+  <div class="screen" id="screen-types">
+    <span class="back-link" onclick="showScreen('screen-categories')">← Categorías</span>
+    <div class="intro"><h2 id="catTitle"></h2></div>
+    <div class="type-list" id="typeList"></div>
+  </div>
+
+  <!-- PANTALLA 5: FORMULARIO DE VARIABLES DEL JUEGO -->
+  <div class="screen" id="screen-form">
+    <span class="back-link" id="backToTypes">← Tipos</span>
+    <div class="form-title" id="formTitle"></div>
+    <div class="form-sub" id="formSub"></div>
+    <div class="ref-note" id="formRefNote"></div>
+    <form id="dynamicForm"></form>
+    <div class="nav-bar">
+      <button class="btn btn-secondary" id="formBackBtn" onclick="showScreen('screen-types')">Atrás</button>
+      <button class="btn btn-primary" id="saveGameBtn" onclick="saveGameAndReturn()">Añadir al archivo</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 6: ELEGIR FINAL -->
+  <div class="screen" id="screen-final-choice">
+    <span class="back-link" onclick="showScreen('screen-skeleton')">← Estructura</span>
+    <div class="intro">
+      <h2>Pantalla final</h2>
+      <p>Última pantalla del archivo.</p>
+    </div>
+    <div class="big-choice">
+      <div class="big-choice-card" onclick="chooseFinal('con_hof')">
+        <b>Final con Hall of Fame</b>
+        <span>Archivo: Aparato_respiratorio__2_.html — Pantalla final. Envía la puntuación a la hoja de cálculo.</span>
+      </div>
+      <div class="big-choice-card" onclick="chooseFinal('sin_hof')">
+        <b>Final sin Hall of Fame</b>
+        <span>Archivo: Comercios_y_productos.html — Pantalla final. Sin envío de puntuación.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA 7: FORMULARIO DE FINAL -->
+  <div class="screen" id="screen-final-form">
+    <span class="back-link" onclick="showScreen('screen-final-choice')">← Volver</span>
+    <div class="form-title" id="finalFormTitle"></div>
+    <div class="ref-note" id="finalFormRef"></div>
+    <form id="finalForm"></form>
+    <div class="nav-bar">
+      <button class="btn btn-secondary" onclick="showScreen('screen-final-choice')">Atrás</button>
+      <button class="btn btn-primary" onclick="saveFinalAndGenerate()">Generar prompt del archivo</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 8: RESULTADO -->
+  <div class="screen" id="screen-result">
+    <div class="intro">
+      <h2>Prompt del archivo completo</h2>
+      <p>Cópialo y pégalo directamente en el chat del proyecto para que se genere el HTML final.</p>
+    </div>
+    <div class="copy-feedback" id="copyFeedback"></div>
+    <div class="result-box" id="resultBox"></div>
+    <div class="nav-bar">
+      <button class="btn btn-secondary" onclick="showScreen('screen-skeleton')">Editar estructura</button>
+      <button class="btn btn-primary" onclick="copyPrompt()">Copiar</button>
+    </div>
+    <div class="nav-bar" style="border-top:none;padding-top:0;margin-top:10px;">
+      <button class="btn btn-ghost" onclick="startOver()">Empezar archivo nuevo</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   BASE DE DATOS DE TIPOS DE JUEGO (pantallas intermedias)
+   ============================================================ */
+const CATEGORIES = [
+  {id:'resumen_cat', label:'Pantalla resumen', icon:'▣', desc:'Recapitula teoría antes de seguir jugando (con o sin acordeón)'},
+  {id:'senalar', label:'Señalar partes', icon:'◎', desc:'Hotspots sobre imagen: casilla, círculo, área, selección múltiple'},
+  {id:'ordenar_completar', label:'Ordenar y completar', icon:'▤', desc:'Ordenar fases, completar texto, clasificar en cajas'},
+  {id:'emparejar', label:'Emparejar', icon:'⇄', desc:'Emparejar columnas o en cuadrícula (grid)'},
+  {id:'imagen_texto', label:'Imagen y texto', icon:'▧', desc:'Listas, botones, grids de imágenes, A o B, definiciones'},
+];
+
+const TYPES = [
+  {id:'resumen', cat:'resumen_cat', label:'Pantalla resumen', isSummary:true,
+    file:'El_embarazo.html', screen:'Pantalla resumen',
+    note:'Recapitula el contenido en bloques de texto, sin acordeón. Puedes añadir varias en distintos puntos del archivo si necesitas recordar teoría antes de cada bloque de juegos.',
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla resumen'},
+      {key:'bloques', type:'pairs', label:'Bloques de resumen', colA:'Nombre del bloque', colB:'Texto del resumen (indica palabras a destacar entre **así**)', hint:'Añade una fila por cada bloque de contenido.'},
+    ]},
+  {id:'resumen_acordeon', cat:'resumen_cat', label:'Pantalla resumen con acordeón', isSummary:true,
+    file:'Acontecimientos_que_marcan_la_historia.html', screen:'Pantalla resumen',
+    note:'Cada bloque se despliega/pliega en un acordeón. Puedes añadir varias en distintos puntos del archivo si necesitas recordar teoría antes de cada bloque de juegos.',
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla resumen'},
+      {key:'bloques', type:'pairs', label:'Acordeones', colA:'Título del acordeón', colB:'Contenido del acordeón', hint:'Añade una fila por cada acordeón.'},
+    ]},
+  {id:'senalar_casilla', cat:'senalar', label:'Señalar partes — Casilla',
+    file:'Aparato_respiratorio__2_.html', screen:'Pantalla de juego 1',
+    note:'Hotspots marcados con casillas sobre la imagen. Con TTS.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'imagen_url', type:'image', label:'Imagen de fondo (adjunta un archivo o pega una URL)'},
+      {key:'relacion', type:'pairs', label:'Relación texto — coordenadas', colA:'Texto / parte a señalar', colB:'Coordenadas (x,y sobre la imagen)', hint:'Una fila por cada parte a identificar.'},
+    ]},
+  {id:'senalar_circulo', cat:'senalar', label:'Señalar partes — Círculo',
+    file:'Solar_system.html', screen:'Pantalla de juego 1',
+    note:'Hotspots marcados con círculo sobre la imagen. Con TTS.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'imagen_url', type:'image', label:'Imagen de fondo (adjunta un archivo o pega una URL)'},
+      {key:'relacion', type:'pairs', label:'Relación texto — coordenadas', colA:'Texto / parte a señalar', colB:'Coordenadas (x,y sobre la imagen)', hint:'Una fila por cada parte a identificar.'},
+    ]},
+  {id:'senalar_area', cat:'senalar', label:'Señalar partes — Área',
+    file:'Partes_de_un_ordenador.html', screen:'Pantalla de juego 1',
+    note:'Hotspots marcados con área/polígono sobre la imagen. Con TTS.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'imagen_url', type:'image', label:'Imagen de fondo (adjunta un archivo o pega una URL)'},
+      {key:'relacion', type:'pairs', label:'Relación texto — coordenadas', colA:'Texto / parte a señalar', colB:'Coordenadas del área', hint:'Una fila por cada parte a identificar.'},
+    ]},
+  {id:'senalar_multiple', cat:'senalar', label:'Señalar partes — Selección múltiple',
+    file:'Desplazan.html', screen:'Pantalla de juego 1',
+    note:'Un mismo texto puede tener varias coordenadas asociadas, todas válidas como acierto. Con TTS.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'imagen_url', type:'image', label:'Imagen de fondo (adjunta un archivo o pega una URL)'},
+      {key:'relacion', type:'pairs', label:'Relación texto — coordenadas', colA:'Texto / parte a señalar', colB:'Coordenadas (si hay varias válidas, sepáralas por comas)', hint:'Una fila por cada parte a identificar.'},
+    ]},
+  {id:'ordenar_fases', cat:'ordenar_completar', label:'Ordenar fases',
+    file:'El_embarazo.html', screen:'Pantalla de juego 1',
+    note:'El alumno ordena tarjetas de fases con botones arriba/abajo.',
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'fases', type:'list', label:'Fases en orden correcto', hint:'Escribe una fase por línea, en el orden correcto.'},
+    ]},
+  {id:'completar_texto', cat:'ordenar_completar', label:'Completar texto',
+    file:'Funcion_de_relacion.html', screen:'Pantalla de juego 1',
+    note:'Las palabras ocultas van al banco de palabras arrastrables.',
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'parrafos', type:'textarea', label:'Párrafos del texto', hint:'Escribe el texto completo tal cual debe leerse.'},
+      {key:'palabras_ocultar', type:'text', label:'Palabras a ocultar (van al banco)', hint:'Sepáralas por comas, tal como aparecen en el texto.'},
+    ]},
+  {id:'ordenar_cajas', cat:'ordenar_completar', label:'Clasificar en cajas',
+    file:'Médicos_especialistas_y_enfermedades.html', screen:'Pantalla de juego 1',
+    note:'Banco de palabras que se arrastran a la caja correcta.',
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'cajas', type:'pairs', label:'Cajas y sus elementos', colA:'Nombre de la caja', colB:'Elementos que van dentro (sepáralos por comas)', hint:'Una fila por cada caja.'},
+    ]},
+  {id:'emparejar_columnas', cat:'emparejar', label:'Emparejar columnas',
+    file:'El_embarazo.html', screen:'Pantalla de juego 2',
+    note:'El alumno une con línea o toque los elementos de columna A con columna B.',
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'parejas', type:'pairs', label:'Parejas', colA:'Columna A', colB:'Columna B', hint:'Una fila por cada pareja.'},
+    ]},
+  {id:'emparejar_grid', cat:'emparejar', label:'Emparejar en grid',
+    file:'Cuerpos_celestes.html', screen:'Pantalla de juego 1',
+    note:'Emparejamiento sobre cuadrícula. Con TTS.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'parejas', type:'pairs', label:'Parejas', colA:'Elemento A', colB:'Elemento B', hint:'Una fila por cada pareja.'},
+    ]},
+  {id:'imagen_listas', cat:'imagen_texto', label:'Imagen con listas',
+    file:'Conceptos_basicos_para_estudiar_y_comprender_la_historia.html', screen:'Pantalla de juego 1',
+    note:'Varias listas de elementos emparejados con imágenes. Con TTS.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'num_listas', type:'text', label:'Número de listas'},
+      {key:'listas', type:'pairs', label:'Elementos e imágenes', colA:'Elemento de la lista', colB:'Imagen emparejada (adjunta o URL)', hint:'Una fila por cada elemento.', imageColumn:'b'},
+    ]},
+  {id:'imagen_botones', cat:'imagen_texto', label:'Imagen con botones',
+    file:'Prehistoria_Etapas.html', screen:'Pantalla de juego 5',
+    note:'Muestra una única imagen en pantalla. El alumno la identifica pulsando el botón de categoría correcto (botones fijos, ej. los reinos de los seres vivos). Al acertar, esa imagen desaparece y aparece la siguiente en el mismo display — nunca hay más de una imagen visible a la vez. Si falla, el botón hace un pequeño "shake" y puede reintentar sobre la misma imagen. Sin TTS en esta pantalla.',
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'botones', type:'list', label:'Nombre de los botones de categoría (fijos durante todo el juego)', hint:'Una categoría por línea, ej: Animales, Plantas, Hongos, Protistas, Móneras.'},
+      {key:'relacion', type:'pairs', label:'Relación imagen — categoría correcta', colA:'Imagen (adjunta o URL)', colB:'Categoría correcta (debe coincidir con uno de los botones)', hint:'Una fila por cada imagen. Aparecerán en el display de una en una, en el orden en que las añadas aquí.', imageColumn:'a'},
+    ]},
+  {id:'texto_botones', cat:'imagen_texto', label:'Texto con botones',
+    file:'Prehistoria_Etapas.html', screen:'Pantalla de juego 1',
+    note:'Botones que muestran contenido asociado sobre un texto. Con TTS.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'relacion', type:'pairs', label:'Relación botón — contenido', colA:'Texto del botón', colB:'Contenido a mostrar (si hay varios, sepáralos por comas)', hint:'Una fila por cada botón.'},
+    ]},
+  {id:'imagen_grid_imagenes', cat:'imagen_texto', label:'Imagen con grid de imágenes',
+    file:'Comercios_y_productos.html', screen:'Pantalla de juego 1',
+    note:'Grid de imágenes que se relacionan con imágenes de display. Con TTS.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'relacion', type:'pairs', label:'Relación grid — display', colA:'Imagen del grid (adjunta o URL)', colB:'Imagen(es) de display asociada (adjunta o pega varias URLs separadas por comas)', hint:'Una fila por cada imagen del grid. Si hay varias imágenes de display para una del grid, sepáralas por comas en el campo de texto.', imageColumn:'a'},
+    ]},
+  {id:'grid_imagenes', cat:'imagen_texto', label:'Grid con imágenes',
+    file:'El_embarazo.html', screen:'Pantalla de juego 2',
+    note:'Se nombra un texto y el alumno hace clic en la imagen correcta dentro de un grid completo del banco. Con TTS.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'relacion', type:'pairs', label:'Relación texto — imagen del grid', colA:'Texto que se nombra', colB:'Imagen correcta en el grid (adjunta o URL)', hint:'Una fila por cada elemento del grid.', imageColumn:'b'},
+    ]},
+  {id:'imagen_a_o_b', cat:'imagen_texto', label:'Imagen A o B',
+    file:'Señales_de_tráfico.html', screen:'Pantalla de juego 1',
+    note:'Se nombra un texto y se muestran solo 2 imágenes (1 correcta + 1 distractor del banco), con barajado ponderado y posición A/B aleatoria. TTS de síntesis real (NO el audio pregrabado obsoleto del archivo modelo).', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'relacion', type:'pairs', label:'Relación texto — imagen correcta', colA:'Texto que se nombra', colB:'Imagen correcta (adjunta o URL; el distractor se toma del resto del banco)', hint:'Una fila por cada elemento. Todas las imágenes juntas forman el banco de distractores.', imageColumn:'b'},
+    ]},
+  {id:'definicion_grid', cat:'imagen_texto', label:'Definición con grid',
+    file:'Prehistoria_Etapas.html', screen:'Pantalla de juego 2',
+    note:'Relación de una definición o texto con una imagen del grid.',
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'relacion', type:'pairs', label:'Relación texto — imagen', colA:'Texto / definición', colB:'Imagen (adjunta o URL)', hint:'Una fila por cada definición.', imageColumn:'b'},
+    ]},
+];
+
+/* ============================================================
+   ESTADO DEL ARCHIVO COMPLETO
+   ============================================================ */
+let fileState = {
+  start: null,        // {mode:'con_hof'|'sin_hof', values:{}, courseLevel:''}
+  games: [],           // [{typeId, values:{}, ttsChoice}]
+  final: null,         // {mode:'con_hof'|'sin_hof', values:{}}
+};
+
+let editingGameIndex = null;   // si se está editando un juego ya añadido (por índice)
+let currentCategory = null;
+let currentType = null;
+let tempFormValues = {};
+let tempTTSChoice = null;
+let tempCourseLevel = '';
+
+/* ============================================================
+   NAVEGACIÓN GENÉRICA
+   ============================================================ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  updateSkeletonBar(id);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function updateSkeletonBar(currentId){
+  const bar = document.getElementById('skeletonBar');
+  const stepInd = document.getElementById('stepIndicator');
+
+  if (currentId === 'screen-start-choice'){
+    bar.classList.add('hidden');
+    stepInd.textContent = 'Pantalla de inicio';
+    return;
+  }
+  bar.classList.remove('hidden');
+
+  let chips = [];
+  chips.push(`<span class="sk-chip ${fileState.start ? 'filled':'pending'}" onclick="editStart()">Inicio</span>`);
+  let chipGameCounter = 0;
+  fileState.games.forEach((g,i)=>{
+    const t = TYPES.find(x=>x.id===g.typeId);
+    const chipLabel = t.isSummary ? `Resumen: ${t.label}` : `${++chipGameCounter}. ${t.label}`;
+    chips.push(`<span class="sk-chip filled" onclick="editGame(${i})">${chipLabel}</span>`);
+  });
+  chips.push(`<span class="sk-chip ${fileState.final ? 'filled':'pending'}" onclick="editFinalOrGoThere()">Final</span>`);
+  bar.innerHTML = chips.join('');
+
+  const stepNames = {
+    'screen-start-form':'Configurando inicio',
+    'screen-skeleton':'Estructura del archivo',
+    'screen-categories':'Elegir categoría',
+    'screen-types':'Elegir tipo de juego',
+    'screen-form':'Configurando pantalla de juego',
+    'screen-final-choice':'Elegir pantalla final',
+    'screen-final-form':'Configurando final',
+    'screen-result':'Prompt final',
+  };
+  stepInd.textContent = stepNames[currentId] || '';
+}
+
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 3200);
+}
+
+function startOver(){
+  fileState = {start:null, games:[], final:null};
+  editingGameIndex = null;
+  showScreen('screen-start-choice');
+}
+
+/* ============================================================
+   PASO INICIO
+   ============================================================ */
+function editStart(){
+  if (!fileState.start){ showScreen('screen-start-choice'); return; }
+  chooseStart(fileState.start.mode, fileState.start.values, fileState.start.courseLevel);
+}
+
+function chooseStart(mode, existingValues, existingCourse){
+  tempFormValues = existingValues ? JSON.parse(JSON.stringify(existingValues)) : {};
+  tempCourseLevel = existingCourse !== undefined ? existingCourse : (fileState.start ? fileState.start.courseLevel : '');
+  const isHof = mode === 'con_hof';
+
+  document.getElementById('startFormTitle').textContent = isHof ? 'Inicio con Hall of Fame' : 'Inicio sin Hall of Fame';
+  document.getElementById('startFormRef').innerHTML = isHof
+    ? '<b>Referencia estructural:</b> Aparato_respiratorio__2_.html — Pantalla de inicio'
+    : '<b>Referencia estructural:</b> Comercios_y_productos.html — Pantalla de inicio';
+
+  const form = document.getElementById('startForm');
+  form.innerHTML = '';
+  const fields = [
+    {key:'titulo', type:'text', label:'Título del juego'},
+    {key:'subtitulo', type:'text', label:'Subtítulo'},
+    {key:'consejo', type:'textarea', label:'Consejo / mensaje motivador', hint:'Termina normalmente con "¡Ánimo!" en negrita.'},
+    {key:'destacadas', type:'text', label:'Palabras a destacar en naranja dentro del consejo', hint:'Sepáralas por comas.'},
+    {key:'observaciones', type:'textarea', label:'Observaciones / instrucciones específicas', hint:'Cualquier matiz o indicación extra para esta pantalla (opcional).'},
+  ];
+  fields.forEach(f=> form.appendChild(buildField(f, tempFormValues)));
+  form.appendChild(buildCourseField());
+
+  form.dataset.mode = mode;
+  showScreen('screen-start-form');
+}
+
+function saveStartAndContinue(){
+  if (!tempFormValues.titulo || !tempFormValues.titulo.trim()){
+    showToast('Ponle un título al juego antes de continuar.');
+    return;
+  }
+  const mode = document.getElementById('startForm').dataset.mode;
+  fileState.start = {
+    mode,
+    values: JSON.parse(JSON.stringify(tempFormValues)),
+    courseLevel: tempCourseLevel,
+  };
+  renderStageList();
+  showScreen('screen-skeleton');
+}
+
+/* ============================================================
+   PASO ESQUELETO (resumen + añadir/quitar juegos)
+   ============================================================ */
+function renderStageList(){
+  const list = document.getElementById('stageList');
+  list.innerHTML = '';
+
+  // Inicio
+  const startItem = document.createElement('div');
+  startItem.className = 'stage-item';
+  const startLabel = fileState.start.mode === 'con_hof' ? 'Inicio con Hall of Fame' : 'Inicio sin Hall of Fame';
+  startItem.innerHTML = `
+    <div class="num fixed">▣</div>
+    <div class="txt"><b>${startLabel}</b><span>${fileState.start.values.titulo || '(sin título aún)'}</span></div>
+    <div class="status done">Hecho</div>
+  `;
+  list.appendChild(startItem);
+
+  // Juegos / resumen (etapas intermedias reordenables)
+  let listGameCounter = 0;
+  fileState.games.forEach((g,i)=>{
+    const t = TYPES.find(x=>x.id===g.typeId);
+    const item = document.createElement('div');
+    item.className = 'stage-item';
+    const upDisabled = i === 0 ? 'disabled' : '';
+    const downDisabled = i === fileState.games.length - 1 ? 'disabled' : '';
+    const numLabel = t.isSummary ? '▣' : (++listGameCounter);
+    item.innerHTML = `
+      <div class="num${t.isSummary ? ' fixed':''}">${numLabel}</div>
+      <div class="txt"><b>${t.label}</b><span>${g.values.titulo || '(sin título)'} · ${t.file}</span></div>
+      <div class="stage-move">
+        <button type="button" class="move-btn" ${upDisabled} onclick="moveGame(${i},-1)" title="Subir">▲</button>
+        <button type="button" class="move-btn" ${downDisabled} onclick="moveGame(${i},1)" title="Bajar">▼</button>
+      </div>
+      <div class="rm-stage" onclick="removeGame(${i})">✕</div>
+    `;
+    list.appendChild(item);
+  });
+
+  document.getElementById('finishSkeletonBtn').disabled = fileState.games.length === 0;
+}
+
+function removeGame(i){
+  fileState.games.splice(i,1);
+  renderStageList();
+}
+
+function moveGame(i, dir){
+  const j = i + dir;
+  if (j < 0 || j >= fileState.games.length) return;
+  const tmp = fileState.games[i];
+  fileState.games[i] = fileState.games[j];
+  fileState.games[j] = tmp;
+  renderStageList();
+}
+
+function goToAddCategory(){
+  editingGameIndex = null;
+  renderCategories();
+  showScreen('screen-categories');
+}
+
+/* ============================================================
+   ELEGIR CATEGORÍA / TIPO
+   ============================================================ */
+function renderCategories(){
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach(cat=>{
+    const count = TYPES.filter(t=>t.cat===cat.id).length;
+    const el = document.createElement('div');
+    el.className = 'cat-card';
+    el.onclick = ()=>openCategory(cat.id);
+    el.innerHTML = `
+      <div class="cat-icon">${cat.icon}</div>
+      <div class="cat-text"><h3>${cat.label}</h3><span>${cat.desc} · ${count} tipos</span></div>
+      <div class="cat-arrow">›</div>
+    `;
+    grid.appendChild(el);
+  });
+}
+
+function openCategory(catId){
+  currentCategory = catId;
+  const cat = CATEGORIES.find(c=>c.id===catId);
+  document.getElementById('catTitle').textContent = cat.label;
+  const list = document.getElementById('typeList');
+  list.innerHTML = '';
+  TYPES.filter(t=>t.cat===catId).forEach(t=>{
+    const el = document.createElement('div');
+    el.className = 'type-card';
+    el.onclick = ()=>openType(t.id);
+    el.innerHTML = `
+      <b>${t.label}</b>
+      <span style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:.78rem;color:var(--muted);">${t.note}</span>
+      ${t.tts ? '<span class="tag">Con voz (TTS)</span>' : ''}
+    `;
+    list.appendChild(el);
+  });
+  document.getElementById('backToTypes').onclick = ()=>showScreen('screen-categories');
+  showScreen('screen-types');
+}
+
+/* ============================================================
+   FORMULARIO DE UNA PANTALLA DE JUEGO
+   ============================================================ */
+function editGame(i){
+  editingGameIndex = i;
+  const g = fileState.games[i];
+  currentType = TYPES.find(t=>t.id===g.typeId);
+  currentCategory = currentType.cat;
+  openType(currentType.id, g.values, g.ttsChoice);
+}
+
+function openType(typeId, existingValues, existingTTS){
+  currentType = TYPES.find(t=>t.id===typeId);
+  tempFormValues = existingValues ? JSON.parse(JSON.stringify(existingValues)) : {};
+  tempTTSChoice = existingTTS !== undefined ? existingTTS : null;
+
+  document.getElementById('formTitle').textContent = currentType.label;
+  document.getElementById('formSub').textContent = currentType.note;
+  document.getElementById('formRefNote').innerHTML =
+    `<b>Referencia estructural:</b> ${currentType.file} — ${currentType.screen}`;
+
+  const form = document.getElementById('dynamicForm');
+  form.innerHTML = '';
+  currentType.fields.forEach(f=> form.appendChild(buildField(f, tempFormValues)));
+  form.appendChild(buildField({key:'observaciones', type:'textarea', label:'Observaciones / instrucciones específicas', hint:'Cualquier matiz o indicación extra para esta pantalla (opcional).'}, tempFormValues));
+  if (currentType.tts) form.appendChild(buildTTSField(tempTTSChoice));
+
+  const backAction = editingGameIndex !== null
+    ? ()=>showScreen('screen-skeleton')
+    : ()=>showScreen('screen-types');
+  document.getElementById('backToTypes').onclick = backAction;
+  document.getElementById('formBackBtn').onclick = backAction;
+
+  document.getElementById('saveGameBtn').textContent = editingGameIndex !== null
+    ? 'Guardar cambios'
+    : 'Añadir al archivo';
+
+  showScreen('screen-form');
+}
+
+function saveGameAndReturn(){
+  if (!tempFormValues.titulo || !tempFormValues.titulo.trim()){
+    showToast('Ponle un título a esta pantalla antes de continuar.');
+    return;
+  }
+  const gameEntry = {
+    typeId: currentType.id,
+    values: JSON.parse(JSON.stringify(tempFormValues)),
+    ttsChoice: tempTTSChoice,
+  };
+  if (editingGameIndex !== null){
+    fileState.games[editingGameIndex] = gameEntry;
+    editingGameIndex = null;
+  } else {
+    fileState.games.push(gameEntry);
+  }
+  renderStageList();
+  showScreen('screen-skeleton');
+}
+
+/* ============================================================
+   CAMPOS REUTILIZABLES
+   ============================================================ */
+function buildField(f, valueStore){
+  const wrap = document.createElement('div');
+  wrap.className = 'field';
+  const label = document.createElement('label');
+  label.textContent = f.label;
+  wrap.appendChild(label);
+
+  if (f.hint){
+    const hint = document.createElement('span');
+    hint.className = 'hint';
+    hint.textContent = f.hint;
+    wrap.appendChild(hint);
+  }
+
+  if (f.type === 'text'){
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = valueStore[f.key] || '';
+    input.oninput = ()=> valueStore[f.key] = input.value;
+    wrap.appendChild(input);
+  }
+  else if (f.type === 'textarea' || f.type === 'list'){
+    const ta = document.createElement('textarea');
+    if (f.type === 'list') ta.placeholder = 'Una línea por elemento';
+    ta.value = valueStore[f.key] || '';
+    ta.oninput = ()=> valueStore[f.key] = ta.value;
+    wrap.appendChild(ta);
+  }
+  else if (f.type === 'image'){
+    wrap.appendChild(buildImagePicker(valueStore, f.key));
+  }
+  else if (f.type === 'pairs'){
+    const existingPairs = (valueStore[f.key] || []).filter(p=>!p.removed);
+    valueStore[f.key] = [];
+    const colHeader = document.createElement('div');
+    colHeader.style.cssText = 'display:flex;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.72rem;color:var(--muted);padding:6px 10px;background:var(--paper);border-radius:8px 8px 0 0;';
+    colHeader.innerHTML = `<div style="flex:1;">${f.colA}</div><div style="flex:1;">${f.colB}</div><div style="flex:0 0 34px;"></div>`;
+    wrap.appendChild(colHeader);
+
+    const table = document.createElement('div');
+    table.className = 'pair-table';
+    table.dataset.imageColumn = f.imageColumn || '';
+    wrap.appendChild(table);
+
+    if (existingPairs.length){
+      existingPairs.forEach(p=> addPairRow(table, valueStore, f.key, p.a, p.b, f.imageColumn));
+    } else {
+      addPairRow(table, valueStore, f.key, '', '', f.imageColumn);
+    }
+
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'add-row-btn';
+    addBtn.textContent = '+ Añadir fila';
+    addBtn.onclick = ()=> addPairRow(table, valueStore, f.key, '', '', f.imageColumn);
+    wrap.appendChild(addBtn);
+  }
+
+  return wrap;
+}
+
+function addPairRow(table, valueStore, key, existingA, existingB, imageColumn){
+  const row = document.createElement('div');
+  row.className = 'pair-row';
+
+  const idx = valueStore[key].length;
+  valueStore[key].push({a: existingA || '', b: existingB || ''});
+
+  const rm = document.createElement('div'); rm.className = 'rm'; rm.textContent = '✕';
+  rm.onclick = ()=>{ valueStore[key][idx].removed = true; row.remove(); };
+
+  const cellA = document.createElement('div');
+  cellA.style.cssText = 'flex:1;border-right:1px solid var(--line);';
+  const cellB = document.createElement('div');
+  cellB.style.cssText = 'flex:1;';
+
+  if (imageColumn === 'a' || imageColumn === 'both'){
+    cellA.appendChild(buildImageCell(valueStore[key][idx], 'a', existingA));
+  } else {
+    const a = document.createElement('input'); a.type = 'text'; a.value = existingA || '';
+    a.style.cssText = 'border:none;width:100%;padding:9px 10px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.85rem;background:var(--card);';
+    a.oninput = ()=> valueStore[key][idx].a = a.value;
+    cellA.appendChild(a);
+  }
+
+  if (imageColumn === 'b' || imageColumn === 'both'){
+    cellB.appendChild(buildImageCell(valueStore[key][idx], 'b', existingB));
+  } else {
+    const b = document.createElement('input'); b.type = 'text'; b.value = existingB || '';
+    b.style.cssText = 'border:none;width:100%;padding:9px 10px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.85rem;background:var(--card);';
+    b.oninput = ()=> valueStore[key][idx].b = b.value;
+    cellB.appendChild(b);
+  }
+
+  row.appendChild(cellA); row.appendChild(cellB); row.appendChild(rm);
+  table.appendChild(row);
+}
+
+/* Celda compacta de imagen dentro de una fila de pareja: botón adjuntar + miniatura + opción URL manual */
+function buildImageCell(pairObj, side, existingVal){
+  const cell = document.createElement('div');
+  cell.style.cssText = 'display:flex;align-items:center;gap:6px;padding:6px 8px;flex-wrap:wrap;';
+
+  const isDataUrl = existingVal && existingVal.startsWith('data:image');
+  const thumb = document.createElement('img');
+  thumb.style.cssText = 'width:28px;height:28px;object-fit:cover;border-radius:5px;border:1px solid var(--line);display:' + (existingVal ? 'block':'none') + ';';
+  if (existingVal) thumb.src = existingVal;
+
+  const fileBtn = document.createElement('label');
+  fileBtn.style.cssText = 'font-family:"Helvetica Neue",Arial,sans-serif;font-size:.7rem;color:var(--moss-dark);border:1px dashed var(--moss);border-radius:6px;padding:5px 8px;cursor:pointer;white-space:nowrap;';
+  fileBtn.textContent = isDataUrl ? 'Cambiar' : 'Adjuntar';
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+  fileBtn.appendChild(fileInput);
+
+  const urlToggle = document.createElement('span');
+  urlToggle.textContent = 'o pegar URL';
+  urlToggle.style.cssText = 'font-family:"Helvetica Neue",Arial,sans-serif;font-size:.68rem;color:var(--muted);cursor:pointer;text-decoration:underline;';
+
+  const urlInput = document.createElement('input');
+  urlInput.type = 'text';
+  urlInput.placeholder = 'URL de la imagen';
+  urlInput.value = (existingVal && !isDataUrl) ? existingVal : '';
+  urlInput.style.cssText = 'display:none;border:1px solid var(--line);border-radius:6px;padding:5px 7px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.75rem;width:100%;margin-top:4px;';
+
+  fileInput.onchange = ()=>{
+    const file = fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      openCropTool(reader.result, (croppedDataUrl)=>{
+        pairObj[side] = croppedDataUrl;
+        thumb.src = croppedDataUrl;
+        thumb.style.display = 'block';
+        fileBtn.textContent = 'Cambiar';
+        urlInput.value = '';
+        urlInput.style.display = 'none';
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  urlToggle.onclick = ()=>{
+    urlInput.style.display = urlInput.style.display === 'none' ? 'block' : 'none';
+  };
+  urlInput.oninput = ()=>{
+    pairObj[side] = urlInput.value;
+    if (urlInput.value){
+      thumb.src = urlInput.value;
+      thumb.style.display = 'block';
+    } else {
+      thumb.style.display = 'none';
+    }
+  };
+
+  const row1 = document.createElement('div');
+  row1.style.cssText = 'display:flex;align-items:center;gap:6px;width:100%;';
+  row1.appendChild(thumb);
+  row1.appendChild(fileBtn);
+  row1.appendChild(urlToggle);
+
+  cell.appendChild(row1);
+  cell.appendChild(urlInput);
+  return cell;
+}
+
+/* ============================================================
+   HERRAMIENTA DE RECORTE DE IMAGEN
+   ============================================================ */
+let cropState = {
+  onDone: null,      // callback(dataUrl)
+  naturalW: 0, naturalH: 0,
+  displayW: 0, displayH: 0,
+  ratio: null,        // null = libre, o número (w/h)
+  box: {x:0, y:0, w:0, h:0},
+  dragging: null,      // 'move' | 'nw' | 'ne' | 'sw' | 'se' | null
+  startPointer: {x:0,y:0},
+  startBox: {x:0,y:0,w:0,h:0},
+};
+
+function openCropTool(dataUrl, onDone){
+  cropState.onDone = onDone;
+  const modal = document.getElementById('cropModal');
+  const img = document.getElementById('cropImage');
+  img.onload = ()=>{
+    // El modal debe estar visible antes de medir clientWidth/Height del <img>
+    modal.classList.add('show');
+    cropState.naturalW = img.naturalWidth;
+    cropState.naturalH = img.naturalHeight;
+    cropState.displayW = img.clientWidth;
+    cropState.displayH = img.clientHeight;
+    cropState.ratio = null;
+    document.querySelectorAll('#cropRatios button').forEach(b=>b.classList.toggle('selected', b.dataset.ratio === 'free'));
+    resetCropBox();
+  };
+  img.src = dataUrl;
+  if (img.complete && img.naturalWidth) img.onload();
+}
+
+function resetCropBox(){
+  const w = cropState.displayW, h = cropState.displayH;
+  let boxW = w * 0.8, boxH = h * 0.8;
+  if (cropState.ratio){
+    if (boxW / boxH > cropState.ratio){ boxW = boxH * cropState.ratio; }
+    else { boxH = boxW / cropState.ratio; }
+  }
+  cropState.box = { x:(w-boxW)/2, y:(h-boxH)/2, w:boxW, h:boxH };
+  renderCropBox();
+}
+
+function renderCropBox(){
+  const box = document.getElementById('cropBox');
+  box.style.left = cropState.box.x + 'px';
+  box.style.top = cropState.box.y + 'px';
+  box.style.width = cropState.box.w + 'px';
+  box.style.height = cropState.box.h + 'px';
+}
+
+document.querySelectorAll('#cropRatios button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#cropRatios button').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const r = btn.dataset.ratio;
+    if (r === 'free'){ cropState.ratio = null; }
+    else {
+      const [a,b] = r.split(':').map(Number);
+      cropState.ratio = a / b;
+    }
+    resetCropBox();
+  });
+});
+
+{
+  const cropBoxEl = document.getElementById('cropBox');
+  const stage = document.getElementById('cropStage');
+
+  const pointerPos = (e)=>{
+    const p = e.touches ? e.touches[0] : e;
+    const rect = stage.getBoundingClientRect();
+    return { x: p.clientX - rect.left, y: p.clientY - rect.top };
+  };
+
+  const startDrag = (handle, e)=>{
+    e.preventDefault();
+    cropState.dragging = handle;
+    cropState.startPointer = pointerPos(e);
+    cropState.startBox = {...cropState.box};
+  };
+
+  cropBoxEl.addEventListener('mousedown', (e)=>{
+    if (e.target.classList.contains('crop-handle')) return;
+    startDrag('move', e);
+  });
+  cropBoxEl.addEventListener('touchstart', (e)=>{
+    if (e.target.classList.contains('crop-handle')) return;
+    startDrag('move', e);
+  }, {passive:false});
+
+  document.querySelectorAll('.crop-handle').forEach(h=>{
+    h.addEventListener('mousedown', (e)=>{ e.stopPropagation(); startDrag(h.dataset.h, e); });
+    h.addEventListener('touchstart', (e)=>{ e.stopPropagation(); startDrag(h.dataset.h, e); }, {passive:false});
+  });
+
+  const onMove = (e)=>{
+    if (!cropState.dragging) return;
+    e.preventDefault();
+    const p = pointerPos(e);
+    const dx = p.x - cropState.startPointer.x;
+    const dy = p.y - cropState.startPointer.y;
+    const W = cropState.displayW, H = cropState.displayH;
+    let {x,y,w,h} = cropState.startBox;
+
+    if (cropState.dragging === 'move'){
+      x = Math.min(Math.max(0, x + dx), W - w);
+      y = Math.min(Math.max(0, y + dy), H - h);
+    } else {
+      // Resize desde una esquina, respetando ratio si está fijado
+      let nx = x, ny = y, nw = w, nh = h;
+      if (cropState.dragging === 'se'){ nw = w + dx; nh = cropState.ratio ? nw / cropState.ratio : h + dy; }
+      if (cropState.dragging === 'nw'){ nw = w - dx; nh = cropState.ratio ? nw / cropState.ratio : h - dy; nx = x + dx; ny = cropState.ratio ? y + (h - nh) : y + dy; }
+      if (cropState.dragging === 'ne'){ nw = w + dx; nh = cropState.ratio ? nw / cropState.ratio : h - dy; ny = cropState.ratio ? y + (h - nh) : y + dy; }
+      if (cropState.dragging === 'sw'){ nw = w - dx; nh = cropState.ratio ? nw / cropState.ratio : h + dy; nx = x + dx; }
+
+      nw = Math.max(30, nw);
+      nh = Math.max(30, nh);
+      // Clamp dentro del lienzo
+      if (nx < 0){ nw += nx; nx = 0; if (cropState.ratio) nh = nw / cropState.ratio; }
+      if (ny < 0){ nh += ny; ny = 0; if (cropState.ratio) nw = nh * cropState.ratio; }
+      if (nx + nw > W){ nw = W - nx; if (cropState.ratio) nh = nw / cropState.ratio; }
+      if (ny + nh > H){ nh = H - ny; if (cropState.ratio) nw = nh * cropState.ratio; }
+
+      x = nx; y = ny; w = nw; h = nh;
+    }
+    cropState.box = {x,y,w,h};
+    renderCropBox();
+  };
+
+  const endDrag = ()=>{ cropState.dragging = null; };
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, {passive:false});
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchend', endDrag);
+}
+
+function cancelCrop(){
+  document.getElementById('cropModal').classList.remove('show');
+  cropState.onDone = null;
+}
+
+function skipCrop(){
+  const img = document.getElementById('cropImage');
+  if (cropState.onDone) cropState.onDone(img.src);
+  document.getElementById('cropModal').classList.remove('show');
+  cropState.onDone = null;
+}
+
+function applyCrop(){
+  const img = document.getElementById('cropImage');
+  const scaleX = cropState.naturalW / cropState.displayW;
+  const scaleY = cropState.naturalH / cropState.displayH;
+
+  const sx = cropState.box.x * scaleX;
+  const sy = cropState.box.y * scaleY;
+  const sw = cropState.box.w * scaleX;
+  const sh = cropState.box.h * scaleY;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(sw);
+  canvas.height = Math.round(sh);
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+  const dataUrl = canvas.toDataURL('image/png');
+  if (cropState.onDone) cropState.onDone(dataUrl);
+  document.getElementById('cropModal').classList.remove('show');
+  cropState.onDone = null;
+}
+
+/* Campo de imagen suelto (no dentro de una tabla de pares) */
+function buildImagePicker(valueStore, key){
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--card);';
+
+  const existingVal = valueStore[key] || '';
+  const isDataUrl = existingVal.startsWith('data:image');
+
+  const preview = document.createElement('img');
+  preview.style.cssText = 'max-width:100%;max-height:140px;border-radius:8px;display:' + (existingVal ? 'block':'none') + ';margin-bottom:10px;';
+  if (existingVal) preview.src = existingVal;
+
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;';
+
+  const fileBtn = document.createElement('label');
+  fileBtn.style.cssText = 'font-family:"Helvetica Neue",Arial,sans-serif;font-size:.82rem;font-weight:600;color:var(--moss-dark);border:1.5px dashed var(--moss);border-radius:8px;padding:9px 14px;cursor:pointer;';
+  fileBtn.textContent = isDataUrl ? '📎 Cambiar imagen' : '📎 Adjuntar imagen';
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+  fileBtn.appendChild(fileInput);
+
+  const orLabel = document.createElement('span');
+  orLabel.textContent = 'o';
+  orLabel.style.cssText = 'font-family:"Helvetica Neue",Arial,sans-serif;font-size:.78rem;color:var(--muted);';
+
+  const urlInput = document.createElement('input');
+  urlInput.type = 'text';
+  urlInput.placeholder = 'pega una URL de imagen';
+  urlInput.value = (existingVal && !isDataUrl) ? existingVal : '';
+  urlInput.style.cssText = 'flex:1;min-width:140px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.85rem;';
+
+  fileInput.onchange = ()=>{
+    const file = fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      openCropTool(reader.result, (croppedDataUrl)=>{
+        valueStore[key] = croppedDataUrl;
+        preview.src = croppedDataUrl;
+        preview.style.display = 'block';
+        fileBtn.textContent = '📎 Cambiar imagen';
+        urlInput.value = '';
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+  urlInput.oninput = ()=>{
+    valueStore[key] = urlInput.value;
+    if (urlInput.value){ preview.src = urlInput.value; preview.style.display = 'block'; }
+    else { preview.style.display = 'none'; }
+  };
+
+  row.appendChild(fileBtn);
+  row.appendChild(orLabel);
+  row.appendChild(urlInput);
+
+  wrap.appendChild(preview);
+  wrap.appendChild(row);
+  return wrap;
+}
+
+function buildCourseField(){
+  const wrap = document.createElement('div');
+  wrap.className = 'field';
+  const label = document.createElement('label');
+  label.textContent = 'Curso / etapa del alumnado';
+  wrap.appendChild(label);
+  const hint = document.createElement('span');
+  hint.className = 'hint';
+  hint.textContent = 'Solo sirve para decidir la sugerencia de Hall of Fame — no aparecerá en el juego.';
+  wrap.appendChild(hint);
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Ej: 3º de Primaria';
+  input.value = tempCourseLevel || '';
+  input.oninput = ()=> tempCourseLevel = input.value;
+  wrap.appendChild(input);
+  return wrap;
+}
+
+function buildTTSField(existingChoice){
+  const wrap = document.createElement('div');
+  wrap.className = 'field';
+  const label = document.createElement('label');
+  label.textContent = 'Lectura por voz (TTS)';
+  wrap.appendChild(label);
+  const hint = document.createElement('span');
+  hint.className = 'hint';
+  hint.textContent = '¿Activar la síntesis de voz en esta pantalla? Si sí, ¿en qué idioma(s)?';
+  wrap.appendChild(hint);
+
+  const choice = document.createElement('div');
+  choice.className = 'pill-choice';
+  choice.style.marginBottom = '10px';
+  ['No activar','Español','Inglés','Español e Inglés'].forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = opt;
+    if (existingChoice === opt) btn.classList.add('selected');
+    btn.onclick = ()=>{
+      choice.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      tempTTSChoice = opt;
+    };
+    choice.appendChild(btn);
+  });
+  wrap.appendChild(choice);
+  return wrap;
+}
+
+/* ============================================================
+   PASO FINAL
+   ============================================================ */
+function goToFinalChoice(){
+  if (fileState.games.length === 0){
+    showToast('Añade al menos una pantalla de juego antes de continuar.');
+    return;
+  }
+  showScreen('screen-final-choice');
+}
+
+function editFinalOrGoThere(){
+  if (!fileState.final){ showScreen('screen-final-choice'); return; }
+  chooseFinal(fileState.final.mode, fileState.final.values);
+}
+
+function chooseFinal(mode, existingValues){
+  tempFormValues = existingValues ? JSON.parse(JSON.stringify(existingValues)) : {};
+  const isHof = mode === 'con_hof';
+
+  document.getElementById('finalFormTitle').textContent = isHof ? 'Final con Hall of Fame' : 'Final sin Hall of Fame';
+  document.getElementById('finalFormRef').innerHTML = isHof
+    ? '<b>Referencia estructural:</b> Aparato_respiratorio__2_.html — Pantalla final'
+    : '<b>Referencia estructural:</b> Comercios_y_productos.html — Pantalla final';
+
+  const form = document.getElementById('finalForm');
+  form.innerHTML = '';
+  form.appendChild(buildField({key:'titulo', type:'text', label:'Título de la pantalla final'}, tempFormValues));
+  if (isHof){
+    form.appendChild(buildField({key:'script_url', type:'text', label:'URL del Google Apps Script (APP_SCRIPT_URL)'}, tempFormValues));
+    form.appendChild(buildField({key:'sheet_name', type:'text', label:'Nombre de la pestaña de la hoja de cálculo (SHEET_NAME)'}, tempFormValues));
+  }
+  form.appendChild(buildField({key:'observaciones', type:'textarea', label:'Observaciones / instrucciones específicas', hint:'Cualquier matiz o indicación extra para esta pantalla (opcional).'}, tempFormValues));
+  form.dataset.mode = mode;
+  showScreen('screen-final-form');
+}
+
+function saveFinalAndGenerate(){
+  if (!tempFormValues.titulo || !tempFormValues.titulo.trim()){
+    showToast('Ponle un título a la pantalla final antes de generar el prompt.');
+    return;
+  }
+  const mode = document.getElementById('finalForm').dataset.mode;
+  fileState.final = {
+    mode,
+    values: JSON.parse(JSON.stringify(tempFormValues)),
+  };
+  generateMasterPrompt();
+}
+
+/* ============================================================
+   GENERACIÓN DEL PROMPT MAESTRO
+   ============================================================ */
+function formatPairs(arr){
+  const clean = (arr||[]).filter(p=>!p.removed && (p.a.trim() || p.b.trim()));
+  if (!clean.length) return '(sin datos)';
+  return clean.map(p=>`  - ${p.a.trim()} → ${p.b.trim()}`).join('\n');
+}
+function formatList(text){
+  if (!text) return '(sin datos)';
+  return text.split('\n').map(l=>l.trim()).filter(Boolean).map((l,i)=>`  ${i+1}. ${l}`).join('\n');
+}
+function formatFieldValue(f, val){
+  if (f.type === 'pairs') return formatPairs(val);
+  if (f.type === 'list') return formatList(val);
+  return val && val.trim() ? val.trim() : '(sin datos)';
+}
+
+function generateMasterPrompt(){
+  const lines = [];
+  const s = fileState.start;
+  const finalS = fileState.final;
+
+  lines.push('Quiero crear un archivo de juego completo con la siguiente estructura:');
+  lines.push('');
+  lines.push('════════════════════════════');
+  lines.push(`PANTALLA DE INICIO — ${s.mode === 'con_hof' ? 'CON Hall of Fame' : 'SIN Hall of Fame'}`);
+  lines.push(`Referencia: ${s.mode === 'con_hof' ? 'Aparato_respiratorio__2_.html' : 'Comercios_y_productos.html'} — Pantalla de inicio`);
+  lines.push('════════════════════════════');
+  lines.push(`Título: ${s.values.titulo || '(sin datos)'}`);
+  lines.push(`Subtítulo: ${s.values.subtitulo || '(sin datos)'}`);
+  lines.push(`Consejo: ${s.values.consejo || '(sin datos)'}`);
+  lines.push(`Palabras a destacar: ${s.values.destacadas || '(sin datos)'}`);
+  if (s.courseLevel){
+    lines.push(`Curso/etapa: ${s.courseLevel}`);
+  }
+  if (s.values.observaciones && s.values.observaciones.trim()){
+    lines.push(`Observaciones: ${s.values.observaciones.trim()}`);
+  }
+
+  let gameCounter = 0;
+  fileState.games.forEach((g)=>{
+    const t = TYPES.find(x=>x.id===g.typeId);
+    lines.push('');
+    lines.push('════════════════════════════');
+    if (t.isSummary){
+      lines.push(`PANTALLA RESUMEN — ${t.label}`);
+    } else {
+      gameCounter++;
+      lines.push(`PANTALLA DE JUEGO ${gameCounter} — ${t.label}`);
+    }
+    lines.push(`Referencia: ${t.file} — ${t.screen}`);
+    lines.push('════════════════════════════');
+    t.fields.forEach(f=>{
+      lines.push(`${f.label}:`);
+      lines.push(formatFieldValue(f, g.values[f.key]));
+    });
+    if (t.tts){
+      lines.push(`TTS: ${g.ttsChoice || 'No activar'}`);
+    }
+    if (g.values.observaciones && g.values.observaciones.trim()){
+      lines.push(`Observaciones: ${g.values.observaciones.trim()}`);
+    }
+  });
+
+  lines.push('');
+  lines.push('════════════════════════════');
+  lines.push(`PANTALLA FINAL — ${finalS.mode === 'con_hof' ? 'CON Hall of Fame' : 'SIN Hall of Fame'}`);
+  lines.push(`Referencia: ${finalS.mode === 'con_hof' ? 'Aparato_respiratorio__2_.html' : 'Comercios_y_productos.html'} — Pantalla final`);
+  lines.push('════════════════════════════');
+  lines.push(`Título: ${finalS.values.titulo || '(sin datos)'}`);
+  if (finalS.mode === 'con_hof'){
+    lines.push(`URL del Apps Script: ${finalS.values.script_url || '(sin datos)'}`);
+    lines.push(`Pestaña de la hoja (SHEET_NAME): ${finalS.values.sheet_name || '(sin datos)'}`);
+  }
+  if (finalS.values.observaciones && finalS.values.observaciones.trim()){
+    lines.push(`Observaciones: ${finalS.values.observaciones.trim()}`);
+  }
+
+  lines.push('');
+  lines.push('Genera el archivo HTML completo siguiendo el orden de pantallas indicado, usando cada referencia estructural exactamente como modelo (sin combinar ni reinventar estructuras), y aplicando todas las reglas técnicas fijas del proyecto (puntuación, idiomas, TTS, Hall of Fame, sonidos, diseño).');
+
+  const prompt = lines.join('\n');
+  document.getElementById('resultBox').textContent = prompt;
+  document.getElementById('copyFeedback').textContent = '';
+  showScreen('screen-result');
+}
+
+function copyPrompt(){
+  const text = document.getElementById('resultBox').textContent;
+  const feedback = document.getElementById('copyFeedback');
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      feedback.textContent = '✓ Copiado';
+      setTimeout(()=>feedback.textContent='', 2000);
+    }).catch(()=> fallbackCopy(text, feedback));
+  } else {
+    fallbackCopy(text, feedback);
+  }
+}
+function fallbackCopy(text, feedback){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try{ document.execCommand('copy'); feedback.textContent = '✓ Copiado'; }
+  catch(e){ feedback.textContent = 'No se pudo copiar automáticamente. Selecciona el texto manualmente.'; }
+  document.body.removeChild(ta);
+  setTimeout(()=>feedback.textContent='', 2500);
+}
+
+/* ============================================================
+   PWA — registro del Service Worker (instalable, sin caché offline)
+   ============================================================ */
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{ /* si falla, la app sigue funcionando normal */ });
+  });
+}
+
+/* ============================================================
+   SPLASH — se retira del DOM tras la animación (2s + fade)
+   ============================================================ */
+setTimeout(()=>{
+  const splash = document.getElementById('splash');
+  if (splash) splash.remove();
+}, 2500);
+</script>
+</body>
+</html>
