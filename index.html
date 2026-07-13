@@ -282,6 +282,7 @@ body{
 .field input:focus,.field textarea:focus{outline:2px solid var(--moss);outline-offset:1px;}
 
 .pair-table{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+.triple-table{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:8px;}
 .pair-row{display:flex;border-bottom:1px solid var(--line);}
 .pair-row:last-child{border-bottom:none;}
 .pair-row input{
@@ -505,7 +506,7 @@ body{
   position:relative;
   width:100%;
   max-height:min(48vh,360px);
-  overflow:hidden;
+  overflow:visible;
   background:#0d2340;
   border-radius:10px;
   display:flex;
@@ -513,8 +514,14 @@ body{
   justify-content:center;
   touch-action:none;
   user-select:none;
+  padding:14px;
 }
-.crop-stage img{
+.crop-frame{
+  position:relative;
+  display:inline-block;
+  line-height:0;
+}
+.crop-frame img{
   max-width:100%;
   max-height:min(48vh,360px);
   display:block;
@@ -575,16 +582,17 @@ body{
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:14px;
+  gap:22px;
   animation:splash-out .5s ease forwards;
   animation-delay:1.9s;
 }
 .splash-logo{
-  width:96px;height:96px;
-  border-radius:22px;
+  width:min(240px, 55vw);
+  height:min(240px, 55vw);
+  border-radius:44px;
   background:#fff;
   object-fit:cover;
-  box-shadow:0 12px 32px rgba(0,0,0,.25);
+  box-shadow:0 18px 48px rgba(0,0,0,.3);
   animation:splash-logo-in .6s cubic-bezier(.34,1.56,.64,1) both;
 }
 .splash-title{
@@ -672,12 +680,14 @@ body{
       <span class="crop-close" onclick="cancelCrop()">✕</span>
     </div>
     <div class="crop-stage" id="cropStage">
-      <img id="cropImage" alt="">
-      <div class="crop-box" id="cropBox">
-        <div class="crop-handle" data-h="nw"></div>
-        <div class="crop-handle" data-h="ne"></div>
-        <div class="crop-handle" data-h="sw"></div>
-        <div class="crop-handle" data-h="se"></div>
+      <div class="crop-frame" id="cropFrame">
+        <img id="cropImage" alt="">
+        <div class="crop-box" id="cropBox">
+          <div class="crop-handle" data-h="nw"></div>
+          <div class="crop-handle" data-h="ne"></div>
+          <div class="crop-handle" data-h="sw"></div>
+          <div class="crop-handle" data-h="se"></div>
+        </div>
       </div>
     </div>
     <div class="crop-ratios" id="cropRatios">
@@ -925,11 +935,11 @@ const TYPES = [
     ]},
   {id:'imagen_botones', cat:'imagen_texto', label:'Imagen con botones',
     file:'Prehistoria_Etapas.html', screen:'Pantalla de juego 5',
-    note:'Muestra una única imagen en pantalla. El alumno la identifica pulsando el botón de categoría correcto (botones fijos, ej. los reinos de los seres vivos). Al acertar, esa imagen desaparece y aparece la siguiente en el mismo display — nunca hay más de una imagen visible a la vez. Si falla, el botón hace un pequeño "shake" y puede reintentar sobre la misma imagen. Sin TTS en esta pantalla.',
+    note:'Muestra una única imagen a la vez (contenedor de tamaño fijo, formato 4:3) y el alumno debe pulsar el botón de categoría correcto. Cada botón lleva su propio icono y color pastel. Si acierta: suena "Correcto", la opción elegida se destaca en verde 200ms y pasa automáticamente a la siguiente imagen. Si falla: suena error, el botón hace "shake", la opción elegida se destaca en rojo, y puede reintentar (cuenta como intento erróneo). Hay barra de progreso con indicador "Nivel X/N". Las imágenes se muestran en orden aleatorio en cada partida. Opcionalmente, cada imagen puede llevar un texto que se muestra sobre ella con un botón de reproducir en voz alta (TTS puntual, no es la lectura general de la pantalla).',
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
-      {key:'botones', type:'list', label:'Nombre de los botones de categoría (fijos durante todo el juego)', hint:'Una categoría por línea, ej: Animales, Plantas, Hongos, Protistas, Móneras.'},
-      {key:'relacion', type:'pairs', label:'Relación imagen — categoría correcta', colA:'Imagen (adjunta o URL)', colB:'Categoría correcta (debe coincidir con uno de los botones)', hint:'Una fila por cada imagen. Aparecerán en el display de una en una, en el orden en que las añadas aquí.', imageColumn:'a'},
+      {key:'botones', type:'pairs', label:'Botones de categoría (fijos durante todo el juego)', colA:'Texto del botón', colB:'Icono (emoji) y color pastel', hint:'Una fila por botón, ej: "Paleolítico" — 🦴 rojo pastel.'},
+      {key:'relacion', type:'triples', label:'Relación botón — imagen — texto', colA:'Botón correcto (debe coincidir con uno de arriba)', colB:'Imagen (adjunta o URL)', colC:'Texto sobre la imagen (opcional, con botón de reproducir)', hint:'Una fila por cada imagen. Aparecerán en el display de una en una, en orden aleatorio.', imageColumn:'b'},
     ]},
   {id:'texto_botones', cat:'imagen_texto', label:'Texto con botones',
     file:'Prehistoria_Etapas.html', screen:'Pantalla de juego 1',
@@ -972,7 +982,7 @@ const TYPES = [
    ESTADO DEL ARCHIVO COMPLETO
    ============================================================ */
 let fileState = {
-  start: null,        // {mode:'con_hof'|'sin_hof', values:{}, courseLevel:''}
+  start: null,        // {mode:'con_hof'|'sin_hof', values:{}}
   games: [],           // [{typeId, values:{}, ttsChoice}]
   final: null,         // {mode:'con_hof'|'sin_hof', values:{}}
 };
@@ -982,7 +992,6 @@ let currentCategory = null;
 let currentType = null;
 let tempFormValues = {};
 let tempTTSChoice = null;
-let tempCourseLevel = '';
 
 /* ============================================================
    NAVEGACIÓN GENÉRICA
@@ -1049,12 +1058,11 @@ function startOver(){
    ============================================================ */
 function editStart(){
   if (!fileState.start){ showScreen('screen-start-choice'); return; }
-  chooseStart(fileState.start.mode, fileState.start.values, fileState.start.courseLevel);
+  chooseStart(fileState.start.mode, fileState.start.values);
 }
 
-function chooseStart(mode, existingValues, existingCourse){
+function chooseStart(mode, existingValues){
   tempFormValues = existingValues ? JSON.parse(JSON.stringify(existingValues)) : {};
-  tempCourseLevel = existingCourse !== undefined ? existingCourse : (fileState.start ? fileState.start.courseLevel : '');
   const isHof = mode === 'con_hof';
 
   document.getElementById('startFormTitle').textContent = isHof ? 'Inicio con Hall of Fame' : 'Inicio sin Hall of Fame';
@@ -1072,7 +1080,6 @@ function chooseStart(mode, existingValues, existingCourse){
     {key:'observaciones', type:'textarea', label:'Observaciones / instrucciones específicas', hint:'Cualquier matiz o indicación extra para esta pantalla (opcional).'},
   ];
   fields.forEach(f=> form.appendChild(buildField(f, tempFormValues)));
-  form.appendChild(buildCourseField());
 
   form.dataset.mode = mode;
   showScreen('screen-start-form');
@@ -1087,7 +1094,6 @@ function saveStartAndContinue(){
   fileState.start = {
     mode,
     values: JSON.parse(JSON.stringify(tempFormValues)),
-    courseLevel: tempCourseLevel,
   };
   renderStageList();
   showScreen('screen-skeleton');
@@ -1316,6 +1322,32 @@ function buildField(f, valueStore){
     addBtn.onclick = ()=> addPairRow(table, valueStore, f.key, '', '', f.imageColumn);
     wrap.appendChild(addBtn);
   }
+  else if (f.type === 'triples'){
+    const existingTriples = (valueStore[f.key] || []).filter(p=>!p.removed);
+    valueStore[f.key] = [];
+    const colHeader = document.createElement('div');
+    colHeader.style.cssText = 'display:flex;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.72rem;color:var(--muted);padding:6px 10px;background:var(--paper);border-radius:8px 8px 0 0;';
+    colHeader.innerHTML = `<div style="flex:1;">${f.colA}</div><div style="flex:1;">${f.colB}</div><div style="flex:1;">${f.colC}</div><div style="flex:0 0 34px;"></div>`;
+    wrap.appendChild(colHeader);
+
+    const table = document.createElement('div');
+    table.className = 'triple-table';
+    table.dataset.imageColumn = f.imageColumn || '';
+    wrap.appendChild(table);
+
+    if (existingTriples.length){
+      existingTriples.forEach(p=> addTripleRow(table, valueStore, f.key, p.a, p.b, p.c, f.imageColumn));
+    } else {
+      addTripleRow(table, valueStore, f.key, '', '', '', f.imageColumn);
+    }
+
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'add-row-btn';
+    addBtn.textContent = '+ Añadir fila';
+    addBtn.onclick = ()=> addTripleRow(table, valueStore, f.key, '', '', '', f.imageColumn);
+    wrap.appendChild(addBtn);
+  }
 
   return wrap;
 }
@@ -1354,6 +1386,51 @@ function addPairRow(table, valueStore, key, existingA, existingB, imageColumn){
   }
 
   row.appendChild(cellA); row.appendChild(cellB); row.appendChild(rm);
+  table.appendChild(row);
+}
+
+function addTripleRow(table, valueStore, key, existingA, existingB, existingC, imageColumn){
+  const row = document.createElement('div');
+  row.className = 'pair-row';
+
+  const idx = valueStore[key].length;
+  valueStore[key].push({a: existingA || '', b: existingB || '', c: existingC || ''});
+
+  const rm = document.createElement('div'); rm.className = 'rm'; rm.textContent = '✕';
+  rm.onclick = ()=>{ valueStore[key][idx].removed = true; row.remove(); };
+
+  const cellA = document.createElement('div');
+  cellA.style.cssText = 'flex:1;border-right:1px solid var(--line);';
+  const cellB = document.createElement('div');
+  cellB.style.cssText = 'flex:1;border-right:1px solid var(--line);';
+  const cellC = document.createElement('div');
+  cellC.style.cssText = 'flex:1;';
+
+  if (imageColumn === 'a' || imageColumn === 'both'){
+    cellA.appendChild(buildImageCell(valueStore[key][idx], 'a', existingA));
+  } else {
+    const a = document.createElement('input'); a.type = 'text'; a.value = existingA || '';
+    a.style.cssText = 'border:none;width:100%;padding:9px 10px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.85rem;background:var(--card);';
+    a.oninput = ()=> valueStore[key][idx].a = a.value;
+    cellA.appendChild(a);
+  }
+
+  if (imageColumn === 'b' || imageColumn === 'both'){
+    cellB.appendChild(buildImageCell(valueStore[key][idx], 'b', existingB));
+  } else {
+    const b = document.createElement('input'); b.type = 'text'; b.value = existingB || '';
+    b.style.cssText = 'border:none;width:100%;padding:9px 10px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.85rem;background:var(--card);';
+    b.oninput = ()=> valueStore[key][idx].b = b.value;
+    cellB.appendChild(b);
+  }
+
+  const c = document.createElement('input'); c.type = 'text'; c.value = existingC || '';
+  c.placeholder = 'Opcional';
+  c.style.cssText = 'border:none;width:100%;padding:9px 10px;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.85rem;background:var(--card);';
+  c.oninput = ()=> valueStore[key][idx].c = c.value;
+  cellC.appendChild(c);
+
+  row.appendChild(cellA); row.appendChild(cellB); row.appendChild(cellC); row.appendChild(rm);
   table.appendChild(row);
 }
 
@@ -1462,7 +1539,7 @@ function openCropTool(dataUrl, onDone){
 
 function resetCropBox(){
   const w = cropState.displayW, h = cropState.displayH;
-  let boxW = w * 0.8, boxH = h * 0.8;
+  let boxW = w * 0.94, boxH = h * 0.94;
   if (cropState.ratio){
     if (boxW / boxH > cropState.ratio){ boxW = boxH * cropState.ratio; }
     else { boxH = boxW / cropState.ratio; }
@@ -1499,7 +1576,8 @@ document.querySelectorAll('#cropRatios button').forEach(btn=>{
 
   const pointerPos = (e)=>{
     const p = e.touches ? e.touches[0] : e;
-    const rect = stage.getBoundingClientRect();
+    const img = document.getElementById('cropImage');
+    const rect = img.getBoundingClientRect();
     return { x: p.clientX - rect.left, y: p.clientY - rect.top };
   };
 
@@ -1531,30 +1609,62 @@ document.querySelectorAll('#cropRatios button').forEach(btn=>{
     const dx = p.x - cropState.startPointer.x;
     const dy = p.y - cropState.startPointer.y;
     const W = cropState.displayW, H = cropState.displayH;
-    let {x,y,w,h} = cropState.startBox;
+    const start = cropState.startBox;
 
     if (cropState.dragging === 'move'){
+      let {x,y,w,h} = start;
       x = Math.min(Math.max(0, x + dx), W - w);
       y = Math.min(Math.max(0, y + dy), H - h);
-    } else {
-      // Resize desde una esquina, respetando ratio si está fijado
-      let nx = x, ny = y, nw = w, nh = h;
-      if (cropState.dragging === 'se'){ nw = w + dx; nh = cropState.ratio ? nw / cropState.ratio : h + dy; }
-      if (cropState.dragging === 'nw'){ nw = w - dx; nh = cropState.ratio ? nw / cropState.ratio : h - dy; nx = x + dx; ny = cropState.ratio ? y + (h - nh) : y + dy; }
-      if (cropState.dragging === 'ne'){ nw = w + dx; nh = cropState.ratio ? nw / cropState.ratio : h - dy; ny = cropState.ratio ? y + (h - nh) : y + dy; }
-      if (cropState.dragging === 'sw'){ nw = w - dx; nh = cropState.ratio ? nw / cropState.ratio : h + dy; nx = x + dx; }
-
-      nw = Math.max(30, nw);
-      nh = Math.max(30, nh);
-      // Clamp dentro del lienzo
-      if (nx < 0){ nw += nx; nx = 0; if (cropState.ratio) nh = nw / cropState.ratio; }
-      if (ny < 0){ nh += ny; ny = 0; if (cropState.ratio) nw = nh * cropState.ratio; }
-      if (nx + nw > W){ nw = W - nx; if (cropState.ratio) nh = nw / cropState.ratio; }
-      if (ny + nh > H){ nh = H - ny; if (cropState.ratio) nw = nh * cropState.ratio; }
-
-      x = nx; y = ny; w = nw; h = nh;
+      cropState.box = {x,y,w,h};
+      renderCropBox();
+      return;
     }
-    cropState.box = {x,y,w,h};
+
+    // Punto fijo = la esquina opuesta a la que se arrastra
+    const fixed = {
+      nw: { x: start.x + start.w, y: start.y + start.h },
+      ne: { x: start.x,           y: start.y + start.h },
+      sw: { x: start.x + start.w, y: start.y           },
+      se: { x: start.x,           y: start.y           },
+    }[cropState.dragging];
+
+    // Esquina arrastrada: posición real según el eje que le corresponde, clamped al lienzo
+    const rawX = (cropState.dragging === 'nw' || cropState.dragging === 'sw') ? start.x + dx : start.x + start.w + dx;
+    const rawY = (cropState.dragging === 'nw' || cropState.dragging === 'ne') ? start.y + dy : start.y + start.h + dy;
+    const moving = {
+      x: Math.min(Math.max(0, rawX), W),
+      y: Math.min(Math.max(0, rawY), H),
+    };
+
+    let nx = Math.min(fixed.x, moving.x);
+    let ny = Math.min(fixed.y, moving.y);
+    let nw = Math.abs(moving.x - fixed.x);
+    let nh = Math.abs(moving.y - fixed.y);
+
+    if (cropState.ratio){
+      // Ajustar al ratio usando la dimensión dominante del gesto
+      if (nw / Math.max(nh,1) > cropState.ratio){
+        nh = nw / cropState.ratio;
+      } else {
+        nw = nh * cropState.ratio;
+      }
+      // Recalcular la esquina de origen para que el punto fijo se mantenga en su sitio
+      nx = moving.x >= fixed.x ? fixed.x : fixed.x - nw;
+      ny = moving.y >= fixed.y ? fixed.y : fixed.y - nh;
+
+      // Clamp final contra los bordes del lienzo, conservando el ratio
+      if (nx < 0){ nw += nx; nx = 0; nh = nw / cropState.ratio; }
+      if (ny < 0){ nh += ny; ny = 0; nw = nh * cropState.ratio; }
+      if (nx + nw > W){ nw = W - nx; nh = nw / cropState.ratio; }
+      if (ny + nh > H){ nh = H - ny; nw = nh * cropState.ratio; }
+    }
+
+    nw = Math.max(30, nw);
+    nh = Math.max(30, nh);
+    nx = Math.min(Math.max(0, nx), W - nw);
+    ny = Math.min(Math.max(0, ny), H - nh);
+
+    cropState.box = {x:nx, y:ny, w:nw, h:nh};
     renderCropBox();
   };
 
@@ -1664,25 +1774,6 @@ function buildImagePicker(valueStore, key){
   return wrap;
 }
 
-function buildCourseField(){
-  const wrap = document.createElement('div');
-  wrap.className = 'field';
-  const label = document.createElement('label');
-  label.textContent = 'Curso / etapa del alumnado';
-  wrap.appendChild(label);
-  const hint = document.createElement('span');
-  hint.className = 'hint';
-  hint.textContent = 'Solo sirve para decidir la sugerencia de Hall of Fame — no aparecerá en el juego.';
-  wrap.appendChild(hint);
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.placeholder = 'Ej: 3º de Primaria';
-  input.value = tempCourseLevel || '';
-  input.oninput = ()=> tempCourseLevel = input.value;
-  wrap.appendChild(input);
-  return wrap;
-}
-
 function buildTTSField(existingChoice){
   const wrap = document.createElement('div');
   wrap.className = 'field';
@@ -1771,12 +1862,21 @@ function formatPairs(arr){
   if (!clean.length) return '(sin datos)';
   return clean.map(p=>`  - ${p.a.trim()} → ${p.b.trim()}`).join('\n');
 }
+function formatTriples(arr){
+  const clean = (arr||[]).filter(p=>!p.removed && (p.a.trim() || p.b.trim() || (p.c||'').trim()));
+  if (!clean.length) return '(sin datos)';
+  return clean.map(p=>{
+    const c = (p.c||'').trim();
+    return `  - ${p.a.trim()} → ${p.b.trim()}${c ? ` (texto: ${c})` : ''}`;
+  }).join('\n');
+}
 function formatList(text){
   if (!text) return '(sin datos)';
   return text.split('\n').map(l=>l.trim()).filter(Boolean).map((l,i)=>`  ${i+1}. ${l}`).join('\n');
 }
 function formatFieldValue(f, val){
   if (f.type === 'pairs') return formatPairs(val);
+  if (f.type === 'triples') return formatTriples(val);
   if (f.type === 'list') return formatList(val);
   return val && val.trim() ? val.trim() : '(sin datos)';
 }
@@ -1796,9 +1896,6 @@ function generateMasterPrompt(){
   lines.push(`Subtítulo: ${s.values.subtitulo || '(sin datos)'}`);
   lines.push(`Consejo: ${s.values.consejo || '(sin datos)'}`);
   lines.push(`Palabras a destacar: ${s.values.destacadas || '(sin datos)'}`);
-  if (s.courseLevel){
-    lines.push(`Curso/etapa: ${s.courseLevel}`);
-  }
   if (s.values.observaciones && s.values.observaciones.trim()){
     lines.push(`Observaciones: ${s.values.observaciones.trim()}`);
   }
