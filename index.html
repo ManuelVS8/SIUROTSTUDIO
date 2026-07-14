@@ -48,7 +48,9 @@ body{
 .topbar .mark{
   width:30px;height:30px;border-radius:8px;
   background:#fff;
-  object-fit:cover;
+  object-fit:contain;
+  padding:3px;
+  box-sizing:border-box;
   flex-shrink:0;
 }
 .topbar h1{
@@ -198,15 +200,29 @@ body{
 
 .back-link{
   font-family:"Helvetica Neue",Arial,sans-serif;
-  font-size:.85rem;
-  color:var(--moss);
+  font-size:.82rem;
+  font-weight:600;
+  color:var(--moss-dark);
   cursor:pointer;
   display:inline-flex;
   align-items:center;
-  gap:5px;
-  margin-bottom:14px;
+  gap:9px;
+  margin-bottom:16px;
   user-select:none;
 }
+.back-link:active .back-circle{transform:scale(.9);}
+.back-circle{
+  width:34px;height:34px;
+  border-radius:50%;
+  background:var(--moss);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  box-shadow:0 3px 10px rgba(26,58,95,.35);
+  transition:transform .12s;
+}
+.back-circle svg{width:15px;height:15px;display:block;}
 .type-list{display:flex;flex-direction:column;gap:8px;}
 .type-card{
   background:var(--card);
@@ -303,6 +319,233 @@ body{
   border-radius:8px;
   padding:7px 12px;
   cursor:pointer;
+}
+
+/* Patrón "elemento con varios valores asociados" — diseño aprobado (mockup) */
+.grouped-mv{display:flex;flex-direction:column;gap:14px;margin-bottom:10px;}
+.mv-group-card{
+  border:1.5px solid var(--line);
+  border-radius:12px;
+  padding:14px 16px;
+  background:#fafbfd;
+}
+.mv-main-field{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-bottom:10px;
+}
+.mv-main-field label{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.72rem;
+  font-weight:700;
+  color:var(--muted);
+  min-width:0;
+  flex-shrink:0;
+}
+.mv-main-field input[type=text]{
+  flex:1;
+  padding:8px 10px;
+  border-radius:7px;
+  border:1.5px solid var(--line);
+  font-size:.85rem;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+}
+.mv-del-item{
+  width:28px;height:28px;
+  border-radius:7px;
+  border:1px solid #f2c2c2;
+  background:#fff;
+  color:var(--clay-dark);
+  cursor:pointer;
+  font-weight:700;
+  flex-shrink:0;
+}
+.mv-assoc-section{
+  padding-left:14px;
+  border-left:3px solid var(--paper);
+  margin-top:8px;
+}
+.mv-assoc-label{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.68rem;
+  font-weight:700;
+  color:#999;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+  margin-bottom:8px;
+}
+.mv-assoc-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:8px;
+}
+.mv-assoc-num{
+  width:22px;height:22px;
+  border-radius:50%;
+  background:var(--clay);
+  color:#fff;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.68rem;
+  font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.mv-assoc-row input[type=text]{
+  flex:1;
+  padding:7px 10px;
+  border-radius:6px;
+  border:1.5px solid var(--line);
+  font-size:.82rem;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+}
+.mv-del-assoc{
+  width:24px;height:24px;
+  border-radius:6px;
+  border:none;
+  background:none;
+  color:var(--clay-dark);
+  cursor:pointer;
+  font-weight:700;
+  flex-shrink:0;
+}
+.add-assoc-btn{
+  padding:6px 12px;
+  border-radius:7px;
+  border:1.5px dashed var(--moss);
+  background:#f5f8fc;
+  color:var(--moss-dark);
+  cursor:pointer;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.75rem;
+  font-weight:700;
+  margin-top:2px;
+}
+.add-group-btn{
+  width:100%;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.85rem;
+  font-weight:700;
+  color:var(--moss-dark);
+  background:var(--card);
+  border:2px dashed var(--moss);
+  border-radius:12px;
+  padding:13px;
+  cursor:pointer;
+  margin-top:4px;
+}
+
+/* Vista previa/adjuntar imagen dentro de una fila (imagen del grid, imagen asociada, etc.) */
+.mv-img-field{display:flex;gap:6px;align-items:center;flex:1;}
+.mv-thumb-preview{
+  width:34px;height:34px;
+  border-radius:6px;
+  object-fit:cover;
+  border:1.5px solid var(--line);
+  flex-shrink:0;
+  background:var(--paper);
+}
+.mv-thumb-placeholder{
+  width:34px;height:34px;
+  border-radius:6px;
+  border:1.5px dashed #cfd4e0;
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;
+  color:#bbb;
+  background:#f9fafc;
+}
+.mv-upload-btn{
+  width:34px;height:34px;
+  border-radius:6px;
+  border:1.5px solid var(--line);
+  background:#fff;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;
+  flex-shrink:0;
+}
+.mv-upload-btn:hover{background:var(--paper);border-color:var(--moss);}
+
+/* Jerarquía de 3 niveles (listas -> elementos -> respuestas) — diseño aprobado */
+.nested3-container{display:flex;flex-direction:column;gap:16px;margin-bottom:10px;}
+.n3-list-card{
+  border:2px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+  background:#fff;
+}
+.n3-list-header{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-bottom:12px;
+}
+.n3-list-header input[type=text]{
+  flex:1;
+  padding:9px 12px;
+  border-radius:8px;
+  border:1.5px solid var(--line);
+  font-size:.9rem;
+  font-weight:700;
+  color:var(--moss-dark);
+  font-family:"Helvetica Neue",Arial,sans-serif;
+}
+.n3-del-list{
+  width:30px;height:30px;
+  border-radius:7px;
+  border:1px solid #f2c2c2;
+  background:#fff;
+  color:var(--clay-dark);
+  cursor:pointer;
+  font-weight:700;
+  flex-shrink:0;
+}
+.n3-elem-card{
+  background:var(--paper);
+  border-radius:10px;
+  padding:12px 14px;
+  margin-bottom:10px;
+  margin-left:12px;
+  border-left:3px solid var(--moss);
+}
+.n3-elem-main{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:8px;
+}
+.n3-elem-main input[type=text]{
+  flex:1;
+  padding:7px 10px;
+  border-radius:6px;
+  border:1.5px solid var(--line);
+  font-size:.83rem;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+}
+.n3-del-elem{
+  width:26px;height:26px;
+  border-radius:6px;
+  border:none;
+  background:none;
+  color:var(--clay-dark);
+  cursor:pointer;
+  font-weight:700;
+  flex-shrink:0;
+}
+.add-element-btn{
+  padding:6px 12px;
+  border-radius:7px;
+  border:1.5px dashed var(--clay);
+  background:#fff7ed;
+  color:var(--clay-dark);
+  cursor:pointer;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.73rem;
+  font-weight:700;
+  margin-left:12px;
+  margin-bottom:6px;
 }
 
 .nav-bar{
@@ -591,7 +834,9 @@ body{
   height:min(240px, 55vw);
   border-radius:44px;
   background:#fff;
-  object-fit:cover;
+  object-fit:contain;
+  padding:18px;
+  box-sizing:border-box;
   box-shadow:0 18px 48px rgba(0,0,0,.3);
   animation:splash-logo-in .6s cubic-bezier(.34,1.56,.64,1) both;
 }
@@ -727,7 +972,7 @@ body{
 
   <!-- PANTALLA 1: FORMULARIO DE INICIO -->
   <div class="screen" id="screen-start-form">
-    <span class="back-link" onclick="showScreen('screen-start-choice')">← Volver</span>
+    <span class="back-link" onclick="showScreen('screen-start-choice')"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Volver</span>
     <div class="form-title" id="startFormTitle"></div>
     <div class="ref-note" id="startFormRef"></div>
     <form id="startForm"></form>
@@ -752,7 +997,7 @@ body{
 
   <!-- PANTALLA 3: ELEGIR CATEGORÍA DE JUEGO -->
   <div class="screen" id="screen-categories">
-    <span class="back-link" onclick="showScreen('screen-skeleton')">← Estructura</span>
+    <span class="back-link" onclick="showScreen('screen-skeleton')"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Estructura</span>
     <div class="intro">
       <h2>¿Qué tipo de pantalla añades?</h2>
       <p>Elige una categoría para ver los tipos disponibles.</p>
@@ -762,14 +1007,14 @@ body{
 
   <!-- PANTALLA 4: ELEGIR TIPO DENTRO DE CATEGORÍA -->
   <div class="screen" id="screen-types">
-    <span class="back-link" onclick="showScreen('screen-categories')">← Categorías</span>
+    <span class="back-link" onclick="showScreen('screen-categories')"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Categorías</span>
     <div class="intro"><h2 id="catTitle"></h2></div>
     <div class="type-list" id="typeList"></div>
   </div>
 
   <!-- PANTALLA 5: FORMULARIO DE VARIABLES DEL JUEGO -->
   <div class="screen" id="screen-form">
-    <span class="back-link" id="backToTypes">← Tipos</span>
+    <span class="back-link" id="backToTypes"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Tipos</span>
     <div class="form-title" id="formTitle"></div>
     <div class="form-sub" id="formSub"></div>
     <div class="ref-note" id="formRefNote"></div>
@@ -782,7 +1027,7 @@ body{
 
   <!-- PANTALLA 6: ELEGIR FINAL -->
   <div class="screen" id="screen-final-choice">
-    <span class="back-link" onclick="showScreen('screen-skeleton')">← Estructura</span>
+    <span class="back-link" onclick="showScreen('screen-skeleton')"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Estructura</span>
     <div class="intro">
       <h2>Pantalla final</h2>
       <p>Última pantalla del archivo.</p>
@@ -801,7 +1046,7 @@ body{
 
   <!-- PANTALLA 7: FORMULARIO DE FINAL -->
   <div class="screen" id="screen-final-form">
-    <span class="back-link" onclick="showScreen('screen-final-choice')">← Volver</span>
+    <span class="back-link" onclick="showScreen('screen-final-choice')"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Volver</span>
     <div class="form-title" id="finalFormTitle"></div>
     <div class="ref-note" id="finalFormRef"></div>
     <form id="finalForm"></form>
@@ -926,34 +1171,47 @@ const TYPES = [
       {key:'parejas', type:'pairs', label:'Parejas', colA:'Elemento A', colB:'Elemento B', hint:'Una fila por cada pareja.'},
     ]},
   {id:'imagen_listas', cat:'imagen_texto', label:'Imagen con listas',
-    file:'Conceptos_basicos_para_estudiar_y_comprender_la_historia.html', screen:'Pantalla de juego 1',
-    note:'Varias listas de elementos emparejados con imágenes. Con TTS.', tts:true,
+    file:'Fuentes_históricas.html', screen:'Pantalla de juego 2',
+    note:'Varias listas de elementos, cada uno con sus propias imágenes/respuestas asociadas. Con TTS. Máximo 3 listas. Si un elemento tiene 1 sola respuesta, se muestra como opción simple sin desplegable; si tiene 2 o más, como desplegable. El ejemplo de Fuentes_históricas.html (una lista simple "Escritas" y otra con subtipos "Oral/Gráfica/Material") es solo una instancia del patrón, no su límite: puedes combinar listas simples y con subtipos como necesites.', tts:true,
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
-      {key:'num_listas', type:'text', label:'Número de listas'},
-      {key:'listas', type:'pairs', label:'Elementos e imágenes', colA:'Elemento de la lista', colB:'Imagen emparejada (adjunta o URL)', hint:'Una fila por cada elemento.', imageColumn:'b'},
+      {key:'listas', type:'nested3', label:'Listas, elementos y respuestas asociadas',
+        hint:'Cada lista tiene un nombre y sus propios elementos; cada elemento tiene sus propias respuestas/imágenes asociadas, cada una en su propio campo.'},
     ]},
   {id:'imagen_botones', cat:'imagen_texto', label:'Imagen con botones',
     file:'Prehistoria_Etapas.html', screen:'Pantalla de juego 5',
-    note:'Muestra una única imagen a la vez (contenedor de tamaño fijo, formato 4:3) y el alumno debe pulsar el botón de categoría correcto. Cada botón lleva su propio icono y color pastel. Si acierta: suena "Correcto", la opción elegida se destaca en verde 200ms y pasa automáticamente a la siguiente imagen. Si falla: suena error, el botón hace "shake", la opción elegida se destaca en rojo, y puede reintentar (cuenta como intento erróneo). Hay barra de progreso con indicador "Nivel X/N". Las imágenes se muestran en orden aleatorio en cada partida. Opcionalmente, cada imagen puede llevar un texto que se muestra sobre ella con un botón de reproducir en voz alta (TTS puntual, no es la lectura general de la pantalla).',
+    note:'Idéntico a "Texto con botones", pero en vez de textos se relacionan imágenes con cada botón, permitiendo varias imágenes asociadas al mismo botón. Muestra las imágenes en el display de una en una (contenedor de tamaño fijo, formato 4:3) y el alumno pulsa el botón correcto. Al acertar: suena "Correcto", se destaca en verde y pasa a la siguiente imagen. Al fallar: suena error, el botón hace "shake", se destaca en rojo, y puede reintentar. Barra de progreso "Nivel X/N". Orden aleatorio en cada partida.', tts:true,
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
-      {key:'botones', type:'pairs', label:'Botones de categoría (fijos durante todo el juego)', colA:'Texto del botón', colB:'Icono (emoji) y color pastel', hint:'Una fila por botón, ej: "Paleolítico" — 🦴 rojo pastel.'},
-      {key:'relacion', type:'triples', label:'Relación botón — imagen — texto', colA:'Botón correcto (debe coincidir con uno de arriba)', colB:'Imagen (adjunta o URL)', colC:'Texto sobre la imagen (opcional, con botón de reproducir)', hint:'Una fila por cada imagen. Aparecerán en el display de una en una, en orden aleatorio.', imageColumn:'b'},
+      {key:'relacion', type:'groupedMultivalue', label:'Botones y sus imágenes asociadas',
+        mainType:'text', mainLabel:'Texto del botón',
+        itemsLabel:'Imágenes asociadas a este botón',
+        itemType:'image',
+        addItemLabel:'+ Añadir imagen asociada', addGroupLabel:'+ Añadir botón',
+        hint:'Cada botón puede tener una o varias imágenes asociadas; cada imagen va en su propio campo, con adjuntar o URL.'},
     ]},
   {id:'texto_botones', cat:'imagen_texto', label:'Texto con botones',
     file:'Prehistoria_Etapas.html', screen:'Pantalla de juego 1',
     note:'Botones que muestran contenido asociado sobre un texto. Con TTS.', tts:true,
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
-      {key:'relacion', type:'pairs', label:'Relación botón — contenido', colA:'Texto del botón', colB:'Contenido a mostrar (si hay varios, sepáralos por comas)', hint:'Una fila por cada botón.'},
+      {key:'relacion', type:'groupedMultivalue', label:'Botones y sus textos de display',
+        mainType:'text', mainLabel:'Texto del botón',
+        itemsLabel:'Textos de display asociados a este botón',
+        itemType:'text', itemPlaceholder:'Texto que se mostrará',
+        addItemLabel:'+ Añadir texto de display', addGroupLabel:'+ Añadir botón',
+        hint:'Cada botón puede tener uno o varios textos asociados; cada texto va en su propio campo.'},
     ]},
   {id:'imagen_grid_imagenes', cat:'imagen_texto', label:'Imagen con grid de imágenes',
     file:'Comercios_y_productos.html', screen:'Pantalla de juego 1',
     note:'Grid de imágenes que se relacionan con imágenes de display. Con TTS.', tts:true,
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
-      {key:'relacion', type:'pairs', label:'Relación grid — display', colA:'Imagen del grid (adjunta o URL)', colB:'Imagen(es) de display asociada (adjunta o pega varias URLs separadas por comas)', hint:'Una fila por cada imagen del grid. Si hay varias imágenes de display para una del grid, sepáralas por comas en el campo de texto.', imageColumn:'a'},
+      {key:'relacion', type:'groupedMultivalue', label:'Imágenes del grid y sus imágenes de display',
+        mainType:'image', mainLabel:'Imagen del grid (adjunta o URL)',
+        itemsLabel:'Imágenes de display asociadas',
+        itemType:'image', addItemLabel:'+ Añadir imagen asociada', addGroupLabel:'+ Añadir imagen del grid',
+        hint:'Cada imagen del grid puede tener una o varias imágenes de display asociadas; cada una en su propio campo, con adjuntar o URL.'},
     ]},
   {id:'grid_imagenes', cat:'imagen_texto', label:'Grid con imágenes',
     file:'El_embarazo.html', screen:'Pantalla de juego 2',
@@ -1348,6 +1606,12 @@ function buildField(f, valueStore){
     addBtn.onclick = ()=> addTripleRow(table, valueStore, f.key, '', '', '', f.imageColumn);
     wrap.appendChild(addBtn);
   }
+  else if (f.type === 'groupedMultivalue'){
+    wrap.appendChild(buildGroupedMultivalue(valueStore, f));
+  }
+  else if (f.type === 'nested3'){
+    wrap.appendChild(buildNested3(valueStore, f));
+  }
 
   return wrap;
 }
@@ -1433,6 +1697,380 @@ function addTripleRow(table, valueStore, key, existingA, existingB, existingC, i
   row.appendChild(cellA); row.appendChild(cellB); row.appendChild(cellC); row.appendChild(rm);
   table.appendChild(row);
 }
+
+/* ============================================================
+   PATRÓN "ELEMENTO CON VARIOS VALORES ASOCIADOS" (diseño aprobado)
+   Cada grupo = { main:'', items:[...] }. El principal y cada item
+   pueden ser texto o imagen según f.mainType / f.itemType.
+   ============================================================ */
+function buildGroupedMultivalue(valueStore, f){
+  const existing = (valueStore[f.key] || []).filter(g=>!g.removed);
+  valueStore[f.key] = [];
+
+  const container = document.createElement('div');
+  container.className = 'grouped-mv';
+
+  function renumberAssoc(assocList, group){
+    const rows = assocList.querySelectorAll('.mv-assoc-row');
+    rows.forEach((r,i)=> r.querySelector('.mv-assoc-num').textContent = i+1);
+    const label = assocList.previousElementSibling;
+    if (label && label.classList.contains('mv-assoc-label')){
+      label.textContent = `${f.itemsLabel} (${rows.length})`;
+    }
+  }
+
+  function renderGroup(group){
+    valueStore[f.key].push(group);
+
+    const card = document.createElement('div');
+    card.className = 'mv-group-card';
+
+    const mainField = document.createElement('div');
+    mainField.className = 'mv-main-field';
+    const mainLabel = document.createElement('label');
+    mainLabel.textContent = f.mainLabel;
+    mainField.appendChild(mainLabel);
+
+    if (f.mainType === 'image'){
+      mainField.appendChild(buildImageCellStandalone(group, 'main'));
+    } else {
+      const mainInput = document.createElement('input');
+      mainInput.type = 'text';
+      mainInput.value = group.main || '';
+      mainInput.placeholder = f.mainLabel;
+      mainInput.oninput = ()=> group.main = mainInput.value;
+      mainField.appendChild(mainInput);
+    }
+
+    const delItem = document.createElement('button');
+    delItem.type = 'button';
+    delItem.className = 'mv-del-item';
+    delItem.textContent = '✕';
+    delItem.onclick = ()=>{ group.removed = true; card.remove(); };
+    mainField.appendChild(delItem);
+
+    card.appendChild(mainField);
+
+    const assocSection = document.createElement('div');
+    assocSection.className = 'mv-assoc-section';
+    const assocLabel = document.createElement('div');
+    assocLabel.className = 'mv-assoc-label';
+    card.appendChild(assocSection);
+    assocSection.appendChild(assocLabel);
+
+    const assocList = document.createElement('div');
+    assocSection.appendChild(assocList);
+
+    function renderItem(initialVal){
+      const itemIdx = group.items.length;
+      group.items.push(initialVal || (f.itemType === 'image' ? {} : ''));
+
+      const row = document.createElement('div');
+      row.className = 'mv-assoc-row';
+      const num = document.createElement('div');
+      num.className = 'mv-assoc-num';
+      row.appendChild(num);
+
+      if (f.itemType === 'image'){
+        const imgObj = group.items[itemIdx];
+        row.appendChild(buildImageCellStandalone(imgObj, 'val', true));
+      } else {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = group.items[itemIdx] || '';
+        input.placeholder = f.itemPlaceholder || '';
+        input.oninput = ()=> group.items[itemIdx] = input.value;
+        row.appendChild(input);
+      }
+
+      const rmItem = document.createElement('button');
+      rmItem.type = 'button';
+      rmItem.className = 'mv-del-assoc';
+      rmItem.textContent = '✕';
+      rmItem.onclick = ()=>{
+        group.items[itemIdx] = f.itemType === 'image' ? {removed:true} : null;
+        row.remove();
+        renumberAssoc(assocList, group);
+      };
+      row.appendChild(rmItem);
+
+      assocList.appendChild(row);
+      renumberAssoc(assocList, group);
+    }
+
+    if (group.items && group.items.length){
+      const initialItems = [...group.items];
+      group.items = [];
+      initialItems.forEach(v=> renderItem(v));
+    } else {
+      group.items = [];
+      renderItem();
+    }
+
+    const addItemBtn = document.createElement('button');
+    addItemBtn.type = 'button';
+    addItemBtn.className = 'add-assoc-btn';
+    addItemBtn.textContent = f.addItemLabel || '+ Añadir valor';
+    addItemBtn.onclick = ()=> renderItem();
+    assocSection.appendChild(addItemBtn);
+
+    container.appendChild(card);
+  }
+
+  if (existing.length){
+    existing.forEach(g=> renderGroup({main: g.main, items: g.items || []}));
+  } else {
+    renderGroup({main:'', items:[]});
+  }
+
+  const addGroupBtn = document.createElement('button');
+  addGroupBtn.type = 'button';
+  addGroupBtn.className = 'add-group-btn';
+  addGroupBtn.textContent = f.addGroupLabel || '+ Añadir elemento';
+  addGroupBtn.onclick = ()=> renderGroup({main:'', items:[]});
+
+  const outer = document.createElement('div');
+  outer.appendChild(container);
+  outer.appendChild(addGroupBtn);
+  return outer;
+}
+
+/* ============================================================
+   JERARQUÍA DE 3 NIVELES: Lista → Elemento → Respuestas asociadas
+   (diseño aprobado — mockup de Fuentes históricas)
+   Estructura: [{ nombre:'', elementos:[{ nombre:'', respuestas:[{}] }] }]
+   Máximo 3 listas.
+   ============================================================ */
+function buildNested3(valueStore, f){
+  const existing = (valueStore[f.key] || []).filter(l=>!l.removed);
+  valueStore[f.key] = [];
+
+  const container = document.createElement('div');
+  container.className = 'nested3-container';
+
+  function renumberResp(respList){
+    const rows = respList.querySelectorAll('.mv-assoc-row');
+    rows.forEach((r,i)=> r.querySelector('.mv-assoc-num').textContent = i+1);
+    const label = respList.previousElementSibling;
+    if (label && label.classList.contains('mv-assoc-label')){
+      label.textContent = `Imágenes asociadas a este elemento (${rows.length})`;
+    }
+  }
+
+  function renderLista(lista){
+    valueStore[f.key].push(lista);
+
+    const listCard = document.createElement('div');
+    listCard.className = 'n3-list-card';
+
+    const listHeader = document.createElement('div');
+    listHeader.className = 'n3-list-header';
+    const nombreInput = document.createElement('input');
+    nombreInput.type = 'text';
+    nombreInput.value = lista.nombre || '';
+    nombreInput.placeholder = 'Nombre de la lista (ej. Fuentes escritas, Energías renovables...)';
+    nombreInput.oninput = ()=> lista.nombre = nombreInput.value;
+    listHeader.appendChild(nombreInput);
+
+    const delList = document.createElement('button');
+    delList.type = 'button';
+    delList.className = 'n3-del-list';
+    delList.textContent = '✕';
+    delList.onclick = ()=>{ lista.removed = true; listCard.remove(); };
+    listHeader.appendChild(delList);
+    listCard.appendChild(listHeader);
+
+    const elemsWrap = document.createElement('div');
+    listCard.appendChild(elemsWrap);
+
+    function renderElemento(elemento){
+      const elemCard = document.createElement('div');
+      elemCard.className = 'n3-elem-card';
+
+      const elemMain = document.createElement('div');
+      elemMain.className = 'n3-elem-main';
+      const elemNombre = document.createElement('input');
+      elemNombre.type = 'text';
+      elemNombre.value = elemento.nombre || '';
+      elemNombre.placeholder = 'Nombre del elemento (ej. Oral, Gráfica, Material...)';
+      elemNombre.oninput = ()=> elemento.nombre = elemNombre.value;
+      elemMain.appendChild(elemNombre);
+
+      const delElem = document.createElement('button');
+      delElem.type = 'button';
+      delElem.className = 'n3-del-elem';
+      delElem.textContent = '✕';
+      delElem.onclick = ()=>{ elemento.removed = true; elemCard.remove(); };
+      elemMain.appendChild(delElem);
+      elemCard.appendChild(elemMain);
+
+      const respSection = document.createElement('div');
+      respSection.className = 'mv-assoc-section';
+      const respLabel = document.createElement('div');
+      respLabel.className = 'mv-assoc-label';
+      elemCard.appendChild(respSection);
+      respSection.appendChild(respLabel);
+
+      const respList = document.createElement('div');
+      respSection.appendChild(respList);
+
+      function renderRespuesta(existingImg){
+        const respIdx = elemento.respuestas.length;
+        elemento.respuestas.push(existingImg || {});
+        const row = document.createElement('div');
+        row.className = 'mv-assoc-row';
+        const num = document.createElement('div');
+        num.className = 'mv-assoc-num';
+        row.appendChild(num);
+        row.appendChild(buildImageCellStandalone(elemento.respuestas[respIdx], 'val', true));
+        const rmResp = document.createElement('button');
+        rmResp.type = 'button';
+        rmResp.className = 'mv-del-assoc';
+        rmResp.textContent = '✕';
+        rmResp.onclick = ()=>{
+          elemento.respuestas[respIdx].removed = true;
+          row.remove();
+          renumberResp(respList);
+        };
+        row.appendChild(rmResp);
+        respList.appendChild(row);
+        renumberResp(respList);
+      }
+
+      const initialResp = elemento.respuestas || [];
+      elemento.respuestas = [];
+      if (initialResp.length){ initialResp.forEach(r=> renderRespuesta(r)); }
+      else { renderRespuesta(); }
+
+      const addRespBtn = document.createElement('button');
+      addRespBtn.type = 'button';
+      addRespBtn.className = 'add-assoc-btn';
+      addRespBtn.textContent = '+ Añadir imagen asociada';
+      addRespBtn.onclick = ()=> renderRespuesta();
+      respSection.appendChild(addRespBtn);
+
+      elemsWrap.appendChild(elemCard);
+    }
+
+    const initialElems = lista.elementos || [];
+    lista.elementos = [];
+    if (initialElems.length){ initialElems.forEach(e=> renderElemento(e)); }
+    else { renderElemento({nombre:'', respuestas:[]}); }
+
+    const addElemBtn = document.createElement('button');
+    addElemBtn.type = 'button';
+    addElemBtn.className = 'add-element-btn';
+    addElemBtn.textContent = '+ Añadir elemento a esta lista';
+    addElemBtn.onclick = ()=> renderElemento({nombre:'', respuestas:[]});
+    listCard.appendChild(addElemBtn);
+
+    container.appendChild(listCard);
+  }
+
+  if (existing.length){
+    existing.forEach(l=> renderLista({nombre: l.nombre, elementos: l.elementos || []}));
+  } else {
+    renderLista({nombre:'', elementos:[]});
+  }
+
+  const addListBtn = document.createElement('button');
+  addListBtn.type = 'button';
+  addListBtn.className = 'add-group-btn';
+  addListBtn.textContent = '+ Añadir lista nueva (máx. 3)';
+  addListBtn.onclick = ()=>{
+    if (valueStore[f.key].filter(l=>!l.removed).length >= 3){
+      showToast('Máximo 3 listas por juego.');
+      return;
+    }
+    renderLista({nombre:'', elementos:[]});
+  };
+
+  const outer = document.createElement('div');
+  outer.appendChild(container);
+  outer.appendChild(addListBtn);
+  return outer;
+}
+
+/* Campo de imagen con vista previa + adjuntar + URL (diseño aprobado del mockup).
+   Reutilizable dentro de grupos de multivalor y jerarquía de 3 niveles. */
+function buildImageCellStandalone(obj, prop, compact){
+  const cell = document.createElement('div');
+  cell.className = 'mv-img-field';
+
+  const existingVal = obj[prop] || '';
+  const isDataUrl = existingVal.startsWith && existingVal.startsWith('data:image');
+
+  let thumb;
+  if (existingVal){
+    thumb = document.createElement('img');
+    thumb.className = 'mv-thumb-preview';
+    thumb.src = existingVal;
+  } else {
+    thumb = document.createElement('div');
+    thumb.className = 'mv-thumb-placeholder';
+    thumb.textContent = '?';
+  }
+
+  const urlInput = document.createElement('input');
+  urlInput.type = 'text';
+  urlInput.placeholder = compact ? 'URL de la imagen' : 'URL de la imagen del grid';
+  urlInput.value = (existingVal && !isDataUrl) ? existingVal : '';
+
+  const uploadBtn = document.createElement('button');
+  uploadBtn.type = 'button';
+  uploadBtn.className = 'mv-upload-btn';
+  uploadBtn.title = 'Adjuntar imagen';
+  uploadBtn.textContent = '📁';
+
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+
+  uploadBtn.onclick = ()=> fileInput.click();
+
+  fileInput.onchange = ()=>{
+    const file = fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      openCropTool(reader.result, (croppedDataUrl)=>{
+        obj[prop] = croppedDataUrl;
+        const newThumb = document.createElement('img');
+        newThumb.className = 'mv-thumb-preview';
+        newThumb.src = croppedDataUrl;
+        thumb.replaceWith(newThumb);
+        thumb = newThumb;
+        urlInput.value = '';
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  urlInput.oninput = ()=>{
+    obj[prop] = urlInput.value;
+    if (urlInput.value){
+      const newThumb = document.createElement('img');
+      newThumb.className = 'mv-thumb-preview';
+      newThumb.src = urlInput.value;
+      thumb.replaceWith(newThumb);
+      thumb = newThumb;
+    } else if (thumb.tagName === 'IMG'){
+      const ph = document.createElement('div');
+      ph.className = 'mv-thumb-placeholder';
+      ph.textContent = '?';
+      thumb.replaceWith(ph);
+      thumb = ph;
+    }
+  };
+
+  cell.appendChild(thumb);
+  cell.appendChild(urlInput);
+  cell.appendChild(uploadBtn);
+  cell.appendChild(fileInput);
+  return cell;
+}
+
 
 /* Celda compacta de imagen dentro de una fila de pareja: botón adjuntar + miniatura + opción URL manual */
 function buildImageCell(pairObj, side, existingVal){
@@ -1874,10 +2512,43 @@ function formatList(text){
   if (!text) return '(sin datos)';
   return text.split('\n').map(l=>l.trim()).filter(Boolean).map((l,i)=>`  ${i+1}. ${l}`).join('\n');
 }
+function formatGroupedMultivalue(arr){
+  const clean = (arr||[]).filter(g=>!g.removed);
+  if (!clean.length) return '(sin datos)';
+  return clean.map(g=>{
+    const mainVal = (g.main || '').toString().trim() || '(sin dato)';
+    const items = (g.items||[]).filter(it=> it !== null && !(it && it.removed));
+    const itemsText = items.length
+      ? items.map(it=> typeof it === 'string' ? `      • ${it.trim()}` : `      • ${it.val || '(sin dato)'}`).join('\n')
+      : '      (sin valores asociados)';
+    return `  - ${mainVal}:\n${itemsText}`;
+  }).join('\n');
+}
+
+function formatNested3(arr){
+  const clean = (arr||[]).filter(l=>!l.removed);
+  if (!clean.length) return '(sin datos)';
+  return clean.map((lista,i)=>{
+    const elems = (lista.elementos||[]).filter(e=>!e.removed);
+    const elemsText = elems.length
+      ? elems.map(e=>{
+          const resp = (e.respuestas||[]).filter(r=>!r.removed);
+          const respText = resp.length
+            ? resp.map(r=> `        • ${r.val || '(sin dato)'}`).join('\n')
+            : '        (sin respuestas)';
+          return `    · ${e.nombre || '(sin nombre)'}:\n${respText}`;
+        }).join('\n')
+      : '    (sin elementos)';
+    return `  Lista ${i+1} — ${lista.nombre || '(sin nombre)'}:\n${elemsText}`;
+  }).join('\n');
+}
+
 function formatFieldValue(f, val){
   if (f.type === 'pairs') return formatPairs(val);
   if (f.type === 'triples') return formatTriples(val);
   if (f.type === 'list') return formatList(val);
+  if (f.type === 'groupedMultivalue') return formatGroupedMultivalue(val);
+  if (f.type === 'nested3') return formatNested3(val);
   return val && val.trim() ? val.trim() : '(sin datos)';
 }
 
