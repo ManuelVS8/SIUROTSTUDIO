@@ -548,6 +548,40 @@ body{
   margin-bottom:6px;
 }
 
+/* Test / Cuestionario: opciones de respuesta con checkbox de correcta */
+.q-option-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:8px;
+}
+.q-option-check{
+  width:20px;height:20px;
+  flex-shrink:0;
+  accent-color:var(--moss);
+  cursor:pointer;
+}
+.q-option-row input[type=text]{
+  flex:1;
+  padding:8px 10px;
+  border-radius:7px;
+  border:1.5px solid var(--line);
+  font-size:.85rem;
+  font-family:"Helvetica Neue",Arial,sans-serif;
+}
+.q-multi-hint{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.72rem;
+  font-weight:700;
+  color:var(--clay-dark);
+  background:#fff3e6;
+  border:1px solid var(--clay);
+  border-radius:8px;
+  padding:5px 10px;
+  margin-bottom:10px;
+  display:inline-block;
+}
+
 .nav-bar{
   display:flex;
   gap:10px;
@@ -667,6 +701,26 @@ body{
   max-height:55vh;
   overflow-y:auto;
   margin-bottom:14px;
+}
+.size-warning{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.82rem;
+  font-weight:600;
+  border-radius:10px;
+  padding:10px 14px;
+  margin-bottom:14px;
+  display:none;
+}
+.size-warning.ok{
+  display:block;
+  background:#e3edf9;
+  color:var(--moss-dark);
+}
+.size-warning.heavy{
+  display:block;
+  background:#fce9d9;
+  color:var(--clay-dark);
+  border:1.5px solid var(--clay);
 }
 .copy-feedback{
   font-family:"Helvetica Neue",Arial,sans-serif;
@@ -1060,13 +1114,20 @@ body{
   <div class="screen" id="screen-result">
     <div class="intro">
       <h2>Prompt del archivo completo</h2>
-      <p>Cópialo y pégalo directamente en el chat del proyecto para que se genere el HTML final.</p>
+      <p>Descárgalo como archivo y súbelo al chat del proyecto — es más fiable que copiar y pegar cuando el prompt incluye imágenes adjuntas.</p>
     </div>
+    <div class="size-warning" id="sizeWarning"></div>
     <div class="copy-feedback" id="copyFeedback"></div>
     <div class="result-box" id="resultBox"></div>
     <div class="nav-bar">
+      <button class="btn btn-primary" onclick="downloadPrompt('md')">⬇ Descargar .md</button>
+      <button class="btn btn-primary" onclick="downloadPrompt('txt')">⬇ Descargar .txt</button>
+    </div>
+    <div class="nav-bar" style="margin-top:10px;">
+      <button class="btn btn-secondary" onclick="copyPrompt()">Copiar al portapapeles</button>
+    </div>
+    <div class="nav-bar">
       <button class="btn btn-secondary" onclick="showScreen('screen-skeleton')">Editar estructura</button>
-      <button class="btn btn-primary" onclick="copyPrompt()">Copiar</button>
     </div>
     <div class="nav-bar" style="border-top:none;padding-top:0;margin-top:10px;">
       <button class="btn btn-ghost" onclick="startOver()">Empezar archivo nuevo</button>
@@ -1085,6 +1146,7 @@ const CATEGORIES = [
   {id:'ordenar_completar', label:'Ordenar y completar', icon:'▤', desc:'Ordenar fases, completar texto, clasificar en cajas'},
   {id:'emparejar', label:'Emparejar', icon:'⇄', desc:'Emparejar columnas o en cuadrícula (grid)'},
   {id:'imagen_texto', label:'Imagen y texto', icon:'▧', desc:'Listas, botones, grids de imágenes, A o B, definiciones'},
+  {id:'test_cat', label:'Test / Cuestionario', icon:'✓', desc:'Preguntas con opciones, una o varias correctas'},
 ];
 
 const TYPES = [
@@ -1171,12 +1233,12 @@ const TYPES = [
       {key:'parejas', type:'pairs', label:'Parejas', colA:'Elemento A', colB:'Elemento B', hint:'Una fila por cada pareja.'},
     ]},
   {id:'imagen_listas', cat:'imagen_texto', label:'Imagen con listas',
-    file:'Fuentes_históricas.html', screen:'Pantalla de juego 2',
-    note:'Varias listas de elementos, cada uno con sus propias imágenes/respuestas asociadas. Con TTS. Máximo 3 listas. Si un elemento tiene 1 sola respuesta, se muestra como opción simple sin desplegable; si tiene 2 o más, como desplegable. El ejemplo de Fuentes_históricas.html (una lista simple "Escritas" y otra con subtipos "Oral/Gráfica/Material") es solo una instancia del patrón, no su límite: puedes combinar listas simples y con subtipos como necesites.', tts:true,
+    file:'Invertebrados.html', screen:'Pantalla de juego 1',
+    note:'Varias listas de elementos, cada uno con sus propias imágenes/respuestas asociadas. Con TTS. Sin límite de listas: se pueden añadir tantas como haga falta. Si un elemento tiene 1 sola respuesta, se muestra como opción simple sin desplegable; si tiene 2 o más, como desplegable. El número de listas y de elementos por lista es siempre variable según el contenido del juego, no un límite fijo.', tts:true,
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
       {key:'listas', type:'nested3', label:'Listas, elementos y respuestas asociadas',
-        hint:'Cada lista tiene un nombre y sus propios elementos; cada elemento tiene sus propias respuestas/imágenes asociadas, cada una en su propio campo.'},
+        hint:'Cada lista tiene un nombre y sus propios elementos; cada elemento tiene sus propias respuestas/imágenes asociadas, cada una en su propio campo. Añade tantas listas como necesites.'},
     ]},
   {id:'imagen_botones', cat:'imagen_texto', label:'Imagen con botones',
     file:'Prehistoria_Etapas.html', screen:'Pantalla de juego 5',
@@ -1233,6 +1295,14 @@ const TYPES = [
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
       {key:'relacion', type:'pairs', label:'Relación texto — imagen', colA:'Texto / definición', colB:'Imagen (adjunta o URL)', hint:'Una fila por cada definición.', imageColumn:'b'},
+    ]},
+  {id:'test', cat:'test_cat', label:'Test',
+    file:'Test_plantas_4.html', screen:'Pantalla de juego 1',
+    note:'Cuestionario tipo test: cada pregunta tiene sus propias opciones de respuesta, marcando cuál o cuáles son correctas. Si una pregunta tiene 2 o más opciones correctas, se muestra un aviso "Marca N respuestas" (esto es una extensión sobre el patrón base del archivo modelo, que solo contempla una respuesta correcta por pregunta — hay que implementar la lógica de multi-respuesta). TTS opcional.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'preguntas', type:'questionsList', label:'Preguntas y opciones de respuesta',
+        hint:'Cada pregunta tiene sus propias opciones; marca con la casilla cuál o cuáles son correctas.'},
     ]},
 ];
 
@@ -1612,6 +1682,9 @@ function buildField(f, valueStore){
   else if (f.type === 'nested3'){
     wrap.appendChild(buildNested3(valueStore, f));
   }
+  else if (f.type === 'questionsList'){
+    wrap.appendChild(buildQuestionsList(valueStore, f));
+  }
 
   return wrap;
 }
@@ -1839,7 +1912,7 @@ function buildGroupedMultivalue(valueStore, f){
    JERARQUÍA DE 3 NIVELES: Lista → Elemento → Respuestas asociadas
    (diseño aprobado — mockup de Fuentes históricas)
    Estructura: [{ nombre:'', elementos:[{ nombre:'', respuestas:[{}] }] }]
-   Máximo 3 listas.
+   Sin límite de listas.
    ============================================================ */
 function buildNested3(valueStore, f){
   const existing = (valueStore[f.key] || []).filter(l=>!l.removed);
@@ -1976,14 +2049,8 @@ function buildNested3(valueStore, f){
   const addListBtn = document.createElement('button');
   addListBtn.type = 'button';
   addListBtn.className = 'add-group-btn';
-  addListBtn.textContent = '+ Añadir lista nueva (máx. 3)';
-  addListBtn.onclick = ()=>{
-    if (valueStore[f.key].filter(l=>!l.removed).length >= 3){
-      showToast('Máximo 3 listas por juego.');
-      return;
-    }
-    renderLista({nombre:'', elementos:[]});
-  };
+  addListBtn.textContent = '+ Añadir lista nueva';
+  addListBtn.onclick = ()=> renderLista({nombre:'', elementos:[]});
 
   const outer = document.createElement('div');
   outer.appendChild(container);
@@ -1993,6 +2060,144 @@ function buildNested3(valueStore, f){
 
 /* Campo de imagen con vista previa + adjuntar + URL (diseño aprobado del mockup).
    Reutilizable dentro de grupos de multivalor y jerarquía de 3 niveles. */
+/* ============================================================
+   TEST / CUESTIONARIO: lista de preguntas, cada una con sus opciones.
+   Cada opción tiene texto + checkbox "es correcta". Si una pregunta
+   tiene 2+ opciones marcadas como correctas, se muestra un aviso
+   "Marca N respuestas" que se actualiza en vivo.
+   Estructura: [{ texto:'', opciones:[{ texto:'', correcta:false }] }]
+   ============================================================ */
+function buildQuestionsList(valueStore, f){
+  const existing = (valueStore[f.key] || []).filter(q=>!q.removed);
+  valueStore[f.key] = [];
+
+  const container = document.createElement('div');
+  container.className = 'nested3-container';
+
+  function updateMultiHint(card, pregunta){
+    let hint = card.querySelector('.q-multi-hint');
+    const correctCount = (pregunta.opciones||[]).filter(o=>!o.removed && o.correcta).length;
+    if (correctCount >= 2){
+      if (!hint){
+        hint = document.createElement('div');
+        hint.className = 'q-multi-hint';
+        const optsLabel = card.querySelector('.mv-assoc-label');
+        optsLabel.after(hint);
+      }
+      hint.textContent = `Marca ${correctCount} respuestas`;
+    } else if (hint){
+      hint.remove();
+    }
+  }
+
+  function renderPregunta(pregunta){
+    valueStore[f.key].push(pregunta);
+
+    const card = document.createElement('div');
+    card.className = 'n3-list-card';
+
+    const head = document.createElement('div');
+    head.className = 'n3-list-header';
+    const textoInput = document.createElement('input');
+    textoInput.type = 'text';
+    textoInput.value = pregunta.texto || '';
+    textoInput.placeholder = 'Texto de la pregunta';
+    textoInput.oninput = ()=> pregunta.texto = textoInput.value;
+    head.appendChild(textoInput);
+
+    const delQ = document.createElement('button');
+    delQ.type = 'button';
+    delQ.className = 'n3-del-list';
+    delQ.textContent = '✕';
+    delQ.onclick = ()=>{ pregunta.removed = true; card.remove(); };
+    head.appendChild(delQ);
+    card.appendChild(head);
+
+    const optsLabel = document.createElement('div');
+    optsLabel.className = 'mv-assoc-label';
+    optsLabel.textContent = 'Opciones de respuesta (marca cuál/cuáles son correctas)';
+    card.appendChild(optsLabel);
+
+    const optsList = document.createElement('div');
+    card.appendChild(optsList);
+
+    function renderOpcion(opcion){
+      const row = document.createElement('div');
+      row.className = 'q-option-row';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'q-option-check';
+      checkbox.checked = !!opcion.correcta;
+      checkbox.title = 'Marcar como respuesta correcta';
+      checkbox.onchange = ()=>{
+        opcion.correcta = checkbox.checked;
+        updateMultiHint(card, pregunta);
+      };
+      row.appendChild(checkbox);
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = opcion.texto || '';
+      input.placeholder = 'Texto de la opción';
+      input.oninput = ()=> opcion.texto = input.value;
+      row.appendChild(input);
+
+      const rmOpt = document.createElement('button');
+      rmOpt.type = 'button';
+      rmOpt.className = 'mv-del-assoc';
+      rmOpt.textContent = '✕';
+      rmOpt.onclick = ()=>{
+        opcion.removed = true;
+        row.remove();
+        updateMultiHint(card, pregunta);
+      };
+      row.appendChild(rmOpt);
+
+      optsList.appendChild(row);
+    }
+
+    const initialOpts = pregunta.opciones || [];
+    pregunta.opciones = [];
+    if (initialOpts.length){
+      initialOpts.forEach(o=>{ pregunta.opciones.push(o); renderOpcion(o); });
+    } else {
+      [{texto:'', correcta:false}, {texto:'', correcta:false}].forEach(o=>{ pregunta.opciones.push(o); renderOpcion(o); });
+    }
+    updateMultiHint(card, pregunta);
+
+    const addOptBtn = document.createElement('button');
+    addOptBtn.type = 'button';
+    addOptBtn.className = 'add-assoc-btn';
+    addOptBtn.textContent = '+ Añadir opción';
+    addOptBtn.onclick = ()=>{
+      const o = {texto:'', correcta:false};
+      pregunta.opciones.push(o);
+      renderOpcion(o);
+    };
+    card.appendChild(addOptBtn);
+
+    container.appendChild(card);
+  }
+
+  if (existing.length){
+    existing.forEach(q=> renderPregunta({texto: q.texto, opciones: q.opciones || []}));
+  } else {
+    renderPregunta({texto:'', opciones:[]});
+  }
+
+  const addQBtn = document.createElement('button');
+  addQBtn.type = 'button';
+  addQBtn.className = 'add-group-btn';
+  addQBtn.textContent = '+ Añadir pregunta';
+  addQBtn.onclick = ()=> renderPregunta({texto:'', opciones:[]});
+
+  const outer = document.createElement('div');
+  outer.appendChild(container);
+  outer.appendChild(addQBtn);
+  return outer;
+}
+
 function buildImageCellStandalone(obj, prop, compact){
   const cell = document.createElement('div');
   cell.className = 'mv-img-field';
@@ -2543,12 +2748,27 @@ function formatNested3(arr){
   }).join('\n');
 }
 
+function formatQuestionsList(arr){
+  const clean = (arr||[]).filter(q=>!q.removed);
+  if (!clean.length) return '(sin datos)';
+  return clean.map((q,i)=>{
+    const opts = (q.opciones||[]).filter(o=>!o.removed);
+    const correctCount = opts.filter(o=>o.correcta).length;
+    const optsText = opts.length
+      ? opts.map(o=> `      ${o.correcta ? '✓' : '·'} ${(o.texto||'').trim() || '(sin texto)'}`).join('\n')
+      : '      (sin opciones)';
+    const multiNote = correctCount >= 2 ? ` [Marca ${correctCount} respuestas]` : '';
+    return `  Pregunta ${i+1}${multiNote}: ${q.texto || '(sin texto)'}\n${optsText}`;
+  }).join('\n');
+}
+
 function formatFieldValue(f, val){
   if (f.type === 'pairs') return formatPairs(val);
   if (f.type === 'triples') return formatTriples(val);
   if (f.type === 'list') return formatList(val);
   if (f.type === 'groupedMultivalue') return formatGroupedMultivalue(val);
   if (f.type === 'nested3') return formatNested3(val);
+  if (f.type === 'questionsList') return formatQuestionsList(val);
   return val && val.trim() ? val.trim() : '(sin datos)';
 }
 
@@ -2616,7 +2836,52 @@ function generateMasterPrompt(){
   const prompt = lines.join('\n');
   document.getElementById('resultBox').textContent = prompt;
   document.getElementById('copyFeedback').textContent = '';
+  showSizeWarning(prompt);
   showScreen('screen-result');
+}
+
+/* ============================================================
+   AVISO DE TAMAÑO + DESCARGA DIRECTA A ARCHIVO (.md / .txt)
+   Evita el bloqueo de Word/navegador al copiar un prompt con
+   imágenes en base64: la descarga va directa a un archivo de
+   texto plano, sin pasar por el portapapeles ni un editor.
+   ============================================================ */
+function formatBytes(bytes){
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024*1024) return `${(bytes/1024).toFixed(0)} KB`;
+  return `${(bytes/(1024*1024)).toFixed(1)} MB`;
+}
+
+function showSizeWarning(prompt){
+  const bytes = new Blob([prompt]).size;
+  const el = document.getElementById('sizeWarning');
+  const sizeText = formatBytes(bytes);
+  const heavy = bytes > 3 * 1024 * 1024; // >3MB: aviso reforzado (típico con varias imágenes en base64)
+
+  if (heavy){
+    el.className = 'size-warning heavy';
+    el.textContent = `⚠️ Este prompt pesa ${sizeText}, casi seguro por imágenes adjuntas en base64. Usa los botones de descarga (.md o .txt) — copiar y pegar un texto así de pesado puede bloquear Word o el navegador.`;
+  } else {
+    el.className = 'size-warning ok';
+    el.textContent = `Tamaño del prompt: ${sizeText}.`;
+  }
+}
+
+function downloadPrompt(ext){
+  const text = document.getElementById('resultBox').textContent;
+  const mime = ext === 'md' ? 'text/markdown' : 'text/plain';
+  const blob = new Blob([text], {type: `${mime};charset=utf-8`});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const titulo = (fileState.start && fileState.start.values.titulo) || 'juego';
+  const safeName = titulo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'juego';
+  a.href = url;
+  a.download = `prompt-${safeName}.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`Descargado como prompt-${safeName}.${ext}`);
 }
 
 function copyPrompt(){
