@@ -634,6 +634,7 @@ body{
   font-size:.74rem;
   color:var(--muted);
 }
+.stage-item .txt.clickable{cursor:pointer;}
 .stage-item .status{
   margin-left:auto;
   font-family:"Helvetica Neue",Arial,sans-serif;
@@ -672,6 +673,50 @@ body{
   font-size:1rem;
   padding:0 4px;
   flex-shrink:0;
+}
+.stage-item .dup-stage{
+  color:var(--moss);
+  cursor:pointer;
+  font-size:.95rem;
+  padding:0 4px;
+  flex-shrink:0;
+  background:none;
+  border:none;
+  font-family:inherit;
+}
+.stage-item .dup-stage:active{transform:scale(.9);}
+
+.library-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.library-item{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+}
+.library-item .txt{flex:1;min-width:0;}
+.library-item .txt b{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.9rem;
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.library-item .txt span{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.72rem;
+  color:var(--muted);
+}
+.library-empty{
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.85rem;
+  color:var(--muted);
+  text-align:center;
+  padding:24px 12px;
 }
 
 .add-game-btn{
@@ -1022,6 +1067,51 @@ body{
         <span>Archivo: Comercios_y_productos.html — Pantalla de inicio. Sin tabla de mejores puntuaciones.</span>
       </div>
     </div>
+    <div class="nav-bar" style="border-top:none;padding-top:0;margin-top:6px;">
+      <button class="btn btn-ghost" onclick="openLibrary()">📚 Prompts guardados</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA LIB: BIBLIOTECA DE PROMPTS GUARDADOS -->
+  <div class="screen" id="screen-library">
+    <span class="back-link" onclick="showScreen('screen-start-choice')"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Volver</span>
+    <div class="intro">
+      <h2>Prompts guardados</h2>
+      <p>Se guardan aquí automáticamente cada vez que generas un prompt. Puedes verlos, renombrarlos, reabrirlos para seguir editando, o borrarlos.</p>
+    </div>
+    <div class="library-list" id="libraryList"></div>
+  </div>
+
+  <!-- PANTALLA LIB-VIEW: VER UN PROMPT GUARDADO -->
+  <div class="screen" id="screen-library-view">
+    <span class="back-link" onclick="showScreen('screen-library')"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Prompts guardados</span>
+    <div class="intro">
+      <h2 id="libraryViewTitle">Prompt guardado</h2>
+      <p id="libraryViewDate"></p>
+    </div>
+    <div class="field">
+      <label>Nombre del prompt guardado</label>
+      <input type="text" id="libraryRenameInput">
+    </div>
+    <div class="nav-bar" style="border-top:none;padding-top:0;">
+      <button class="btn btn-secondary" onclick="renameSavedPrompt()">Renombrar</button>
+    </div>
+    <div class="size-warning" id="libraryViewSizeWarning"></div>
+    <div class="result-box" id="libraryViewBox"></div>
+    <div class="nav-bar">
+      <button class="btn btn-primary" onclick="downloadSavedPrompt('md')">⬇ Descargar .md</button>
+      <button class="btn btn-primary" onclick="downloadSavedPrompt('txt')">⬇ Descargar .txt</button>
+    </div>
+    <div class="nav-bar" style="margin-top:10px;">
+      <button class="btn btn-secondary" onclick="copySavedPrompt()">Copiar al portapapeles</button>
+    </div>
+    <div class="nav-bar">
+      <button class="btn btn-secondary" onclick="reopenSavedPromptAsDraft()">✎ Reabrir para seguir editando</button>
+    </div>
+    <div class="copy-feedback" id="libraryCopyFeedback"></div>
+    <div class="nav-bar" style="border-top:none;padding-top:0;margin-top:10px;">
+      <button class="btn btn-ghost" onclick="deleteSavedPrompt()">🗑 Borrar este prompt guardado</button>
+    </div>
   </div>
 
   <!-- PANTALLA 1: FORMULARIO DE INICIO -->
@@ -1125,6 +1215,9 @@ body{
     </div>
     <div class="nav-bar" style="margin-top:10px;">
       <button class="btn btn-secondary" onclick="copyPrompt()">Copiar al portapapeles</button>
+    </div>
+    <div class="nav-bar">
+      <button class="btn btn-secondary" onclick="openSavedPrompt(currentlyViewingPromptId)">📚 Ver en biblioteca (guardado automáticamente)</button>
     </div>
     <div class="nav-bar">
       <button class="btn btn-secondary" onclick="showScreen('screen-skeleton')">Editar estructura</button>
@@ -1237,8 +1330,18 @@ const TYPES = [
     note:'Varias listas de elementos, cada uno con sus propias imágenes/respuestas asociadas. Con TTS. Sin límite de listas: se pueden añadir tantas como haga falta. Si un elemento tiene 1 sola respuesta, se muestra como opción simple sin desplegable; si tiene 2 o más, como desplegable. El número de listas y de elementos por lista es siempre variable según el contenido del juego, no un límite fijo.', tts:true,
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
-      {key:'listas', type:'nested3', label:'Listas, elementos y respuestas asociadas',
+      {key:'listas', type:'nested3', itemType:'image', label:'Listas, elementos y respuestas asociadas',
         hint:'Cada lista tiene un nombre y sus propios elementos; cada elemento tiene sus propias respuestas/imágenes asociadas, cada una en su propio campo. Añade tantas listas como necesites.'},
+    ]},
+  {id:'texto_listas', cat:'imagen_texto', label:'Texto con listas',
+    file:'Sector_primario.html', screen:'Pantalla de juego 3',
+    note:'Mismo patrón que "Imagen con listas" (listas de elementos con sus propios valores asociados, orden aleatorio de listas en cada partida), pero en el display central aparece un TEXTO en vez de una imagen, con botón de reproducción TTS debajo que lo lee en voz alta. Sin límite de listas. Si un elemento tiene 1 sola respuesta se muestra como opción simple sin desplegable; si tiene 2 o más, como desplegable.', tts:true,
+    fields:[
+      {key:'titulo', type:'text', label:'Título de la pantalla'},
+      {key:'listas', type:'nested3', itemType:'text', itemPlaceholder:'Texto que se mostrará en el display',
+        itemsLabelBase:'Textos asociados a este elemento', addRespLabel:'+ Añadir texto asociado',
+        label:'Listas, elementos y textos asociados',
+        hint:'Cada lista tiene un nombre y sus propios elementos; cada elemento tiene sus propios textos asociados, cada uno en su propio campo. Añade tantas listas como necesites.'},
     ]},
   {id:'imagen_botones', cat:'imagen_texto', label:'Imagen con botones',
     file:'Prehistoria_Etapas.html', screen:'Pantalla de juego 5',
@@ -1340,6 +1443,11 @@ function updateSkeletonBar(currentId){
     stepInd.textContent = 'Pantalla de inicio';
     return;
   }
+  if (currentId === 'screen-library' || currentId === 'screen-library-view'){
+    bar.classList.add('hidden');
+    stepInd.textContent = currentId === 'screen-library' ? 'Prompts guardados' : 'Viendo prompt guardado';
+    return;
+  }
   bar.classList.remove('hidden');
 
   let chips = [];
@@ -1362,6 +1470,8 @@ function updateSkeletonBar(currentId){
     'screen-final-choice':'Elegir pantalla final',
     'screen-final-form':'Configurando final',
     'screen-result':'Prompt final',
+    'screen-library':'Prompts guardados',
+    'screen-library-view':'Viendo prompt guardado',
   };
   stepInd.textContent = stepNames[currentId] || '';
 }
@@ -1456,11 +1566,12 @@ function renderStageList(){
     const numLabel = t.isSummary ? '▣' : (++listGameCounter);
     item.innerHTML = `
       <div class="num${t.isSummary ? ' fixed':''}">${numLabel}</div>
-      <div class="txt"><b>${t.label}</b><span>${g.values.titulo || '(sin título)'} · ${t.file}</span></div>
+      <div class="txt clickable" onclick="editGame(${i})" title="Editar esta pantalla"><b>${t.label}</b><span>${g.values.titulo || '(sin título)'} · ${t.file}</span></div>
       <div class="stage-move">
         <button type="button" class="move-btn" ${upDisabled} onclick="moveGame(${i},-1)" title="Subir">▲</button>
         <button type="button" class="move-btn" ${downDisabled} onclick="moveGame(${i},1)" title="Bajar">▼</button>
       </div>
+      <button type="button" class="dup-stage" onclick="duplicateGame(${i})" title="Duplicar esta pantalla">⧉</button>
       <div class="rm-stage" onclick="removeGame(${i})">✕</div>
     `;
     list.appendChild(item);
@@ -1472,6 +1583,17 @@ function renderStageList(){
 function removeGame(i){
   fileState.games.splice(i,1);
   renderStageList();
+}
+
+function duplicateGame(i){
+  const original = fileState.games[i];
+  const copy = JSON.parse(JSON.stringify(original));
+  if (copy.values && typeof copy.values.titulo === 'string' && copy.values.titulo.trim()){
+    copy.values.titulo = `${copy.values.titulo.trim()} (copia)`;
+  }
+  fileState.games.splice(i + 1, 0, copy);
+  renderStageList();
+  showToast('Pantalla duplicada. Puedes editarla y modificar lo que quieras.');
 }
 
 function moveGame(i, dir){
@@ -1917,6 +2039,9 @@ function buildGroupedMultivalue(valueStore, f){
 function buildNested3(valueStore, f){
   const existing = (valueStore[f.key] || []).filter(l=>!l.removed);
   valueStore[f.key] = [];
+  const itemType = f.itemType || 'image';
+  const itemsLabelBase = f.itemsLabelBase || (itemType === 'image' ? 'Imágenes asociadas a este elemento' : 'Textos asociados a este elemento');
+  const addRespLabel = f.addRespLabel || (itemType === 'image' ? '+ Añadir imagen asociada' : '+ Añadir texto asociado');
 
   const container = document.createElement('div');
   container.className = 'nested3-container';
@@ -1926,7 +2051,7 @@ function buildNested3(valueStore, f){
     rows.forEach((r,i)=> r.querySelector('.mv-assoc-num').textContent = i+1);
     const label = respList.previousElementSibling;
     if (label && label.classList.contains('mv-assoc-label')){
-      label.textContent = `Imágenes asociadas a este elemento (${rows.length})`;
+      label.textContent = `${itemsLabelBase} (${rows.length})`;
     }
   }
 
@@ -1987,21 +2112,32 @@ function buildNested3(valueStore, f){
       const respList = document.createElement('div');
       respSection.appendChild(respList);
 
-      function renderRespuesta(existingImg){
+      function renderRespuesta(existingVal){
         const respIdx = elemento.respuestas.length;
-        elemento.respuestas.push(existingImg || {});
+        elemento.respuestas.push(existingVal !== undefined ? existingVal : (itemType === 'image' ? {} : ''));
         const row = document.createElement('div');
         row.className = 'mv-assoc-row';
         const num = document.createElement('div');
         num.className = 'mv-assoc-num';
         row.appendChild(num);
-        row.appendChild(buildImageCellStandalone(elemento.respuestas[respIdx], 'val', true));
+
+        if (itemType === 'image'){
+          row.appendChild(buildImageCellStandalone(elemento.respuestas[respIdx], 'val', true));
+        } else {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = elemento.respuestas[respIdx] || '';
+          input.placeholder = f.itemPlaceholder || 'Texto que se mostrará';
+          input.oninput = ()=> elemento.respuestas[respIdx] = input.value;
+          row.appendChild(input);
+        }
+
         const rmResp = document.createElement('button');
         rmResp.type = 'button';
         rmResp.className = 'mv-del-assoc';
         rmResp.textContent = '✕';
         rmResp.onclick = ()=>{
-          elemento.respuestas[respIdx].removed = true;
+          elemento.respuestas[respIdx] = itemType === 'image' ? {removed:true} : null;
           row.remove();
           renumberResp(respList);
         };
@@ -2018,7 +2154,7 @@ function buildNested3(valueStore, f){
       const addRespBtn = document.createElement('button');
       addRespBtn.type = 'button';
       addRespBtn.className = 'add-assoc-btn';
-      addRespBtn.textContent = '+ Añadir imagen asociada';
+      addRespBtn.textContent = addRespLabel;
       addRespBtn.onclick = ()=> renderRespuesta();
       respSection.appendChild(addRespBtn);
 
@@ -2737,9 +2873,9 @@ function formatNested3(arr){
     const elems = (lista.elementos||[]).filter(e=>!e.removed);
     const elemsText = elems.length
       ? elems.map(e=>{
-          const resp = (e.respuestas||[]).filter(r=>!r.removed);
+          const resp = (e.respuestas||[]).filter(r=> r !== null && !(r && r.removed));
           const respText = resp.length
-            ? resp.map(r=> `        • ${r.val || '(sin dato)'}`).join('\n')
+            ? resp.map(r=> typeof r === 'string' ? `        • ${r.trim() || '(sin dato)'}` : `        • ${r.val || '(sin dato)'}`).join('\n')
             : '        (sin respuestas)';
           return `    · ${e.nombre || '(sin nombre)'}:\n${respText}`;
         }).join('\n')
@@ -2838,6 +2974,7 @@ function generateMasterPrompt(){
   document.getElementById('copyFeedback').textContent = '';
   showSizeWarning(prompt);
   showScreen('screen-result');
+  autoSaveCurrentPrompt(prompt);
 }
 
 /* ============================================================
@@ -2907,6 +3044,253 @@ function fallbackCopy(text, feedback){
   catch(e){ feedback.textContent = 'No se pudo copiar automáticamente. Selecciona el texto manualmente.'; }
   document.body.removeChild(ta);
   setTimeout(()=>feedback.textContent='', 2500);
+}
+
+/* ============================================================
+   BIBLIOTECA DE PROMPTS GUARDADOS
+   Esta app es una PWA independiente (no un artifact de Claude.ai),
+   así que la persistencia usa localStorage del propio navegador/móvil
+   — sobrevive a recargas, cierres de pestaña, o que el sistema mate
+   la app en segundo plano. Los datos quedan solo en este dispositivo.
+   Cada entrada guarda: id, nombre (título del inicio), prompt (texto),
+   fileState (copia completa para poder reabrir como borrador), fecha.
+   ============================================================ */
+const LIBRARY_PREFIX = 'saved-prompt:';
+let currentlyViewingPromptId = null;
+
+function generatePromptId(){
+  return `${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+}
+
+/* Wrapper mínimo sobre localStorage, con la misma forma que la API
+   de storage de artifacts, para mantener el resto del código igual. */
+const libStorage = {
+  async set(key, value){
+    try{ localStorage.setItem(key, value); return {key, value}; }
+    catch(e){ console.error('localStorage.setItem falló (¿cuota llena?):', e); throw e; }
+  },
+  async get(key){
+    const value = localStorage.getItem(key);
+    if (value === null) return null;
+    return {key, value};
+  },
+  async delete(key){
+    localStorage.removeItem(key);
+    return {key, deleted:true};
+  },
+  async list(prefix){
+    const keys = [];
+    for (let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (k && k.startsWith(prefix)) keys.push(k);
+    }
+    return {keys};
+  }
+};
+
+async function autoSaveCurrentPrompt(prompt){
+  try{
+    const titulo = (fileState.start && fileState.start.values.titulo && fileState.start.values.titulo.trim())
+      || 'Juego sin título';
+    const id = generatePromptId();
+    const entry = {
+      id,
+      nombre: titulo,
+      prompt,
+      fileState: JSON.parse(JSON.stringify(fileState)),
+      savedAt: new Date().toISOString(),
+    };
+    await libStorage.set(`${LIBRARY_PREFIX}${id}`, JSON.stringify(entry));
+    currentlyViewingPromptId = id;
+  } catch(e){
+    console.error('No se pudo guardar el prompt en la biblioteca:', e);
+    showToast('No se pudo guardar en la biblioteca (¿memoria del navegador llena?). Descárgalo para no perderlo.');
+  }
+}
+
+async function listSavedPrompts(){
+  try{
+    const listResult = await libStorage.list(LIBRARY_PREFIX);
+    const keys = (listResult && listResult.keys) || [];
+    const entries = [];
+    for (const key of keys){
+      try{
+        const res = await libStorage.get(key);
+        if (res && res.value){
+          entries.push(JSON.parse(res.value));
+        }
+      } catch(e){ /* clave puntual corrupta o inexistente: se omite */ }
+    }
+    entries.sort((a,b)=> new Date(b.savedAt) - new Date(a.savedAt));
+    return entries;
+  } catch(e){
+    console.error('No se pudieron listar los prompts guardados:', e);
+    return [];
+  }
+}
+
+async function openLibrary(){
+  showScreen('screen-library');
+  const list = document.getElementById('libraryList');
+  list.innerHTML = '<div class="library-empty">Cargando…</div>';
+  const entries = await listSavedPrompts();
+  if (!entries.length){
+    list.innerHTML = '<div class="library-empty">Todavía no hay ningún prompt guardado. Se guardarán aquí automáticamente cada vez que generes uno.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  entries.forEach(entry=>{
+    const item = document.createElement('div');
+    item.className = 'library-item';
+    const dateLabel = formatSavedDate(entry.savedAt);
+    item.innerHTML = `
+      <div class="txt"><b>${escapeHtml(entry.nombre)}</b><span>${dateLabel}</span></div>
+    `;
+    item.onclick = ()=> openSavedPrompt(entry.id);
+    list.appendChild(item);
+  });
+}
+
+function formatSavedDate(iso){
+  try{
+    const d = new Date(iso);
+    return d.toLocaleString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+  } catch(e){ return ''; }
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+async function openSavedPrompt(id){
+  try{
+    const res = await libStorage.get(`${LIBRARY_PREFIX}${id}`);
+    if (!res || !res.value){
+      showToast('No se pudo abrir ese prompt guardado.');
+      return;
+    }
+    const entry = JSON.parse(res.value);
+    currentlyViewingPromptId = id;
+    document.getElementById('libraryViewTitle').textContent = entry.nombre;
+    document.getElementById('libraryViewDate').textContent = `Guardado el ${formatSavedDate(entry.savedAt)}`;
+    document.getElementById('libraryRenameInput').value = entry.nombre;
+    document.getElementById('libraryViewBox').textContent = entry.prompt;
+    document.getElementById('libraryCopyFeedback').textContent = '';
+    showLibrarySizeWarning(entry.prompt);
+    showScreen('screen-library-view');
+  } catch(e){
+    console.error('Error abriendo prompt guardado:', e);
+    showToast('No se pudo abrir ese prompt guardado.');
+  }
+}
+
+function showLibrarySizeWarning(prompt){
+  const bytes = new Blob([prompt]).size;
+  const el = document.getElementById('libraryViewSizeWarning');
+  const sizeText = formatBytes(bytes);
+  const heavy = bytes > 3 * 1024 * 1024;
+  if (heavy){
+    el.className = 'size-warning heavy';
+    el.textContent = `⚠️ Este prompt pesa ${sizeText}. Usa los botones de descarga (.md o .txt) en vez de copiar y pegar.`;
+  } else {
+    el.className = 'size-warning ok';
+    el.textContent = `Tamaño del prompt: ${sizeText}.`;
+  }
+}
+
+async function renameSavedPrompt(){
+  if (!currentlyViewingPromptId) return;
+  const newName = document.getElementById('libraryRenameInput').value.trim();
+  if (!newName){
+    showToast('Ponle un nombre antes de renombrar.');
+    return;
+  }
+  try{
+    const key = `${LIBRARY_PREFIX}${currentlyViewingPromptId}`;
+    const res = await libStorage.get(key);
+    if (!res || !res.value) return;
+    const entry = JSON.parse(res.value);
+    entry.nombre = newName;
+    await libStorage.set(key, JSON.stringify(entry));
+    document.getElementById('libraryViewTitle').textContent = newName;
+    showToast('Nombre actualizado.');
+  } catch(e){
+    console.error('Error renombrando prompt:', e);
+    showToast('No se pudo renombrar.');
+  }
+}
+
+async function downloadSavedPrompt(ext){
+  if (!currentlyViewingPromptId) return;
+  try{
+    const res = await libStorage.get(`${LIBRARY_PREFIX}${currentlyViewingPromptId}`);
+    if (!res || !res.value) return;
+    const entry = JSON.parse(res.value);
+    const mime = ext === 'md' ? 'text/markdown' : 'text/plain';
+    const blob = new Blob([entry.prompt], {type: `${mime};charset=utf-8`});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const safeName = entry.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'juego';
+    a.href = url;
+    a.download = `prompt-${safeName}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`Descargado como prompt-${safeName}.${ext}`);
+  } catch(e){
+    console.error('Error descargando prompt guardado:', e);
+    showToast('No se pudo descargar.');
+  }
+}
+
+function copySavedPrompt(){
+  const text = document.getElementById('libraryViewBox').textContent;
+  const feedback = document.getElementById('libraryCopyFeedback');
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      feedback.textContent = '✓ Copiado';
+      setTimeout(()=>feedback.textContent='', 2000);
+    }).catch(()=> fallbackCopy(text, feedback));
+  } else {
+    fallbackCopy(text, feedback);
+  }
+}
+
+async function reopenSavedPromptAsDraft(){
+  if (!currentlyViewingPromptId) return;
+  try{
+    const res = await libStorage.get(`${LIBRARY_PREFIX}${currentlyViewingPromptId}`);
+    if (!res || !res.value) return;
+    const entry = JSON.parse(res.value);
+    if (!entry.fileState){
+      showToast('Este prompt guardado no tiene borrador editable disponible (era de una versión anterior).');
+      return;
+    }
+    fileState = JSON.parse(JSON.stringify(entry.fileState));
+    editingGameIndex = null;
+    renderStageList();
+    showScreen('screen-skeleton');
+    showToast('Borrador reabierto. Puedes seguir editándolo.');
+  } catch(e){
+    console.error('Error reabriendo prompt como borrador:', e);
+    showToast('No se pudo reabrir este prompt como borrador.');
+  }
+}
+
+async function deleteSavedPrompt(){
+  if (!currentlyViewingPromptId) return;
+  try{
+    await libStorage.delete(`${LIBRARY_PREFIX}${currentlyViewingPromptId}`);
+    currentlyViewingPromptId = null;
+    showToast('Prompt guardado eliminado.');
+    openLibrary();
+  } catch(e){
+    console.error('Error borrando prompt guardado:', e);
+    showToast('No se pudo borrar.');
+  }
 }
 
 /* ============================================================
