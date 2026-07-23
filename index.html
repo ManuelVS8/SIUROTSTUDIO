@@ -2968,6 +2968,7 @@ function generateMasterPrompt(){
 
   lines.push('');
   lines.push('Genera el archivo HTML completo siguiendo el orden de pantallas indicado, usando cada referencia estructural exactamente como modelo (sin combinar ni reinventar estructuras), y aplicando todas las reglas técnicas fijas del proyecto (puntuación, idiomas, TTS, Hall of Fame, sonidos, diseño).');
+  lines.push('Corrige cualquier error ortográfico, gramatical o errata que haya en los textos introducidos (títulos, consejos, definiciones, opciones, etc.), tanto en español como en inglés si se ha proporcionado un array en inglés. No corrijas ni "normalices" nombres propios, términos técnicos o vocabulario intencionalmente simplificado.');
 
   const prompt = lines.join('\n');
   document.getElementById('resultBox').textContent = prompt;
