@@ -1116,12 +1116,12 @@ body{
 
   <!-- PANTALLA 1: FORMULARIO DE INICIO -->
   <div class="screen" id="screen-start-form">
-    <span class="back-link" onclick="showScreen('screen-start-choice')"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Volver</span>
+    <span class="back-link" onclick="backFromStartForm()"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Volver</span>
     <div class="form-title" id="startFormTitle"></div>
     <div class="ref-note" id="startFormRef"></div>
     <form id="startForm"></form>
     <div class="nav-bar">
-      <button class="btn btn-secondary" onclick="showScreen('screen-start-choice')">Atrás</button>
+      <button class="btn btn-secondary" onclick="backFromStartForm()">Atrás</button>
       <button class="btn btn-primary" onclick="saveStartAndContinue()">Continuar</button>
     </div>
   </div>
@@ -1190,12 +1190,12 @@ body{
 
   <!-- PANTALLA 7: FORMULARIO DE FINAL -->
   <div class="screen" id="screen-final-form">
-    <span class="back-link" onclick="showScreen('screen-final-choice')"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Volver</span>
+    <span class="back-link" onclick="backFromFinalForm()"><span class="back-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5 L8 12 L15 19" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Volver</span>
     <div class="form-title" id="finalFormTitle"></div>
     <div class="ref-note" id="finalFormRef"></div>
     <form id="finalForm"></form>
     <div class="nav-bar">
-      <button class="btn btn-secondary" onclick="showScreen('screen-final-choice')">Atrás</button>
+      <button class="btn btn-secondary" onclick="backFromFinalForm()">Atrás</button>
       <button class="btn btn-primary" onclick="saveFinalAndGenerate()">Generar prompt del archivo</button>
     </div>
   </div>
@@ -1327,7 +1327,7 @@ const TYPES = [
     ]},
   {id:'imagen_listas', cat:'imagen_texto', label:'Imagen con listas',
     file:'Invertebrados.html', screen:'Pantalla de juego 1',
-    note:'Varias listas de elementos, cada uno con sus propias imágenes/respuestas asociadas. Con TTS. Sin límite de listas: se pueden añadir tantas como haga falta. Si un elemento tiene 1 sola respuesta, se muestra como opción simple sin desplegable; si tiene 2 o más, como desplegable. El número de listas y de elementos por lista es siempre variable según el contenido del juego, no un límite fijo.', tts:true,
+    note:'Varias listas de elementos, cada uno con sus propias imágenes/respuestas asociadas. Con TTS. Sin límite de listas: se pueden añadir tantas como haga falta. Si un elemento tiene 1 sola respuesta, se muestra como opción simple sin desplegable; si tiene 2 o más, como desplegable. El número de listas y de elementos por lista es siempre variable según el contenido del juego, no un límite fijo. IMPORTANTE: debe incluir un botón "Comprobar" — seleccionar una opción de una lista solo la marca como elegida (sin comprobar), y solo al pulsar "Comprobar" se evalúa la respuesta; esto evita que un clic accidental en el desplegable cuente como respuesta definitiva.', tts:true,
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
       {key:'listas', type:'nested3', itemType:'image', label:'Listas, elementos y respuestas asociadas',
@@ -1335,7 +1335,7 @@ const TYPES = [
     ]},
   {id:'texto_listas', cat:'imagen_texto', label:'Texto con listas',
     file:'Sector_primario.html', screen:'Pantalla de juego 3',
-    note:'Mismo patrón que "Imagen con listas" (listas de elementos con sus propios valores asociados, orden aleatorio de listas en cada partida), pero en el display central aparece un TEXTO en vez de una imagen, con botón de reproducción TTS debajo que lo lee en voz alta. Sin límite de listas. Si un elemento tiene 1 sola respuesta se muestra como opción simple sin desplegable; si tiene 2 o más, como desplegable.', tts:true,
+    note:'Mismo patrón que "Imagen con listas" (listas de elementos con sus propios valores asociados, orden aleatorio de listas en cada partida), pero en el display central aparece un TEXTO en vez de una imagen, con botón de reproducción TTS debajo que lo lee en voz alta. Sin límite de listas. Si un elemento tiene 1 sola respuesta se muestra como opción simple sin desplegable; si tiene 2 o más, como desplegable. IMPORTANTE: debe incluir un botón "Comprobar" — seleccionar una opción de una lista solo la marca como elegida (sin comprobar), y solo al pulsar "Comprobar" se evalúa la respuesta; esto evita que un clic accidental en el desplegable cuente como respuesta definitiva.', tts:true,
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
       {key:'listas', type:'nested3', itemType:'text', itemPlaceholder:'Texto que se mostrará en el display',
@@ -1380,7 +1380,7 @@ const TYPES = [
     ]},
   {id:'grid_imagenes', cat:'imagen_texto', label:'Grid con imágenes',
     file:'El_embarazo.html', screen:'Pantalla de juego 2',
-    note:'Se nombra un texto y el alumno hace clic en la imagen correcta dentro de un grid completo del banco. Con TTS.', tts:true,
+    note:'Se nombra un texto y el alumno hace clic en la imagen correcta dentro de un grid completo del banco. Con TTS. Las imágenes deben tener protagonismo visual: el grid debe aprovechar el ancho disponible del contenedor (no quedarse pequeño con espacio libre alrededor) y cada celda debe rellenarse por completo (object-fit:cover), respetando el formato real de las imágenes (por defecto 4:3 salvo que se indique otro).', tts:true,
     fields:[
       {key:'titulo', type:'text', label:'Título de la pantalla'},
       {key:'relacion', type:'pairs', label:'Relación texto — imagen del grid', colA:'Texto que se nombra', colB:'Imagen correcta en el grid (adjunta o URL)', hint:'Una fila por cada elemento del grid.', imageColumn:'b'},
@@ -1486,6 +1486,10 @@ function showToast(msg){
 }
 
 function startOver(){
+  const hasContent = fileState.start || fileState.games.length > 0 || fileState.final;
+  if (hasContent && !confirm('¿Seguro que quieres empezar un archivo nuevo? Se perderá todo el progreso actual (inicio, pantallas de juego y final) que no hayas guardado como prompt en la biblioteca.')){
+    return;
+  }
   fileState = {start:null, games:[], final:null};
   editingGameIndex = null;
   showScreen('screen-start-choice');
@@ -1521,6 +1525,27 @@ function chooseStart(mode, existingValues){
 
   form.dataset.mode = mode;
   showScreen('screen-start-form');
+}
+
+function backFromStartForm(){
+  const hasTitle = tempFormValues.titulo && tempFormValues.titulo.trim();
+  const hasAnyOtherValue = Object.keys(tempFormValues).some(k => {
+    if (k === 'titulo') return false;
+    const v = tempFormValues[k];
+    if (v === null || v === undefined || v === '') return false;
+    if (Array.isArray(v)) return v.length > 0;
+    if (typeof v === 'object') return Object.keys(v).length > 0;
+    return true;
+  });
+  if (hasTitle || hasAnyOtherValue){
+    const mode = document.getElementById('startForm').dataset.mode;
+    fileState.start = {
+      mode,
+      values: JSON.parse(JSON.stringify(tempFormValues)),
+    };
+    renderStageList();
+  }
+  showScreen(fileState.start ? 'screen-skeleton' : 'screen-start-choice');
 }
 
 function saveStartAndContinue(){
@@ -1679,9 +1704,14 @@ function openType(typeId, existingValues, existingTTS){
   form.appendChild(buildField({key:'observaciones', type:'textarea', label:'Observaciones / instrucciones específicas', hint:'Cualquier matiz o indicación extra para esta pantalla (opcional).'}, tempFormValues));
   if (currentType.tts) form.appendChild(buildTTSField(tempTTSChoice));
 
-  const backAction = editingGameIndex !== null
-    ? ()=>showScreen('screen-skeleton')
-    : ()=>showScreen('screen-types');
+  const backAction = ()=>{
+    autoSaveFormProgress();
+    if (editingGameIndex !== null || fileState.games.length > 0 || fileState.start){
+      showScreen('screen-skeleton');
+    } else {
+      showScreen('screen-types');
+    }
+  };
   document.getElementById('backToTypes').onclick = backAction;
   document.getElementById('formBackBtn').onclick = backAction;
 
@@ -1690,6 +1720,37 @@ function openType(typeId, existingValues, existingTTS){
     : 'Añadir al archivo';
 
   showScreen('screen-form');
+}
+
+/* Guarda silenciosamente el progreso del formulario actual al navegar hacia atrás,
+   para evitar perder datos ya introducidos (p.ej. listas de "Imagen con listas" ya
+   rellenadas) si el usuario pulsa "Atrás" en vez de "Guardar cambios"/"Añadir al archivo".
+   No exige título ni muestra avisos: si no hay nada útil que guardar, no hace nada. */
+function autoSaveFormProgress(){
+  if (!currentType) return;
+  const hasTitle = tempFormValues.titulo && tempFormValues.titulo.trim();
+  const hasAnyOtherValue = Object.keys(tempFormValues).some(k => {
+    if (k === 'titulo') return false;
+    const v = tempFormValues[k];
+    if (v === null || v === undefined || v === '') return false;
+    if (Array.isArray(v)) return v.length > 0;
+    if (typeof v === 'object') return Object.keys(v).length > 0;
+    return true;
+  });
+  if (!hasTitle && !hasAnyOtherValue) return; // formulario vacío: nada que perder
+
+  const gameEntry = {
+    typeId: currentType.id,
+    values: JSON.parse(JSON.stringify(tempFormValues)),
+    ttsChoice: tempTTSChoice,
+  };
+  if (editingGameIndex !== null){
+    fileState.games[editingGameIndex] = gameEntry;
+  } else {
+    fileState.games.push(gameEntry);
+    editingGameIndex = fileState.games.length - 1;
+  }
+  renderStageList();
 }
 
 function saveGameAndReturn(){
@@ -2677,13 +2738,22 @@ function applyCrop(){
   const sw = cropState.box.w * scaleX;
   const sh = cropState.box.h * scaleY;
 
+  // Limitar el lado mayor del resultado para evitar base64 enormes con fotos
+  // de móvil sin redimensionar (una foto de 12MP puede pesar decenas de MB
+  // en base64, lo que hace el .md casi imposible de leer al subirlo al chat).
+  const MAX_SIDE = 1000;
+  const longSide = Math.max(sw, sh);
+  const outScale = longSide > MAX_SIDE ? MAX_SIDE / longSide : 1;
+
   const canvas = document.createElement('canvas');
-  canvas.width = Math.round(sw);
-  canvas.height = Math.round(sh);
+  canvas.width = Math.round(sw * outScale);
+  canvas.height = Math.round(sh * outScale);
   const ctx = canvas.getContext('2d');
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
-  const dataUrl = canvas.toDataURL('image/png');
+  // JPEG con calidad .85 en vez de PNG: para fotos reales pesa una fracción
+  // del tamaño con pérdida de calidad imperceptible en pantalla.
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
   if (cropState.onDone) cropState.onDone(dataUrl);
   document.getElementById('cropModal').classList.remove('show');
   cropState.onDone = null;
@@ -2818,6 +2888,27 @@ function chooseFinal(mode, existingValues){
   form.appendChild(buildField({key:'observaciones', type:'textarea', label:'Observaciones / instrucciones específicas', hint:'Cualquier matiz o indicación extra para esta pantalla (opcional).'}, tempFormValues));
   form.dataset.mode = mode;
   showScreen('screen-final-form');
+}
+
+function backFromFinalForm(){
+  const hasTitle = tempFormValues.titulo && tempFormValues.titulo.trim();
+  const hasAnyOtherValue = Object.keys(tempFormValues).some(k => {
+    if (k === 'titulo') return false;
+    const v = tempFormValues[k];
+    if (v === null || v === undefined || v === '') return false;
+    if (Array.isArray(v)) return v.length > 0;
+    if (typeof v === 'object') return Object.keys(v).length > 0;
+    return true;
+  });
+  if (hasTitle || hasAnyOtherValue){
+    const mode = document.getElementById('finalForm').dataset.mode;
+    fileState.final = {
+      mode,
+      values: JSON.parse(JSON.stringify(tempFormValues)),
+    };
+    renderStageList();
+  }
+  showScreen('screen-final-choice');
 }
 
 function saveFinalAndGenerate(){
@@ -3262,6 +3353,10 @@ function copySavedPrompt(){
 
 async function reopenSavedPromptAsDraft(){
   if (!currentlyViewingPromptId) return;
+  const hasCurrentContent = fileState.start || fileState.games.length > 0 || fileState.final;
+  if (hasCurrentContent && !confirm('Ya tienes un archivo en construcción. Al reabrir este prompt guardado se sustituirá por completo. ¿Continuar?')){
+    return;
+  }
   try{
     const res = await libStorage.get(`${LIBRARY_PREFIX}${currentlyViewingPromptId}`);
     if (!res || !res.value) return;
@@ -3283,6 +3378,9 @@ async function reopenSavedPromptAsDraft(){
 
 async function deleteSavedPrompt(){
   if (!currentlyViewingPromptId) return;
+  if (!confirm('¿Seguro que quieres borrar este prompt guardado? No se puede deshacer.')){
+    return;
+  }
   try{
     await libStorage.delete(`${LIBRARY_PREFIX}${currentlyViewingPromptId}`);
     currentlyViewingPromptId = null;
